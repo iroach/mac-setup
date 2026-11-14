@@ -64,4 +64,4 @@ cask "git-credential-manager"
 
 # --- Fonts ---
 cask "font-jetbrains-mono-nerd-font"
-cask "font-monaspice-nerd-font"
+# font-monaspice-nerd-font left out: it unpacks hundreds of font files and takes minutes to install.
