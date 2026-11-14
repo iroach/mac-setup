@@ -42,7 +42,7 @@ git config --global user.email "you@example.com"
   - `gitconfig`: shared Git settings, included from your `~/.gitconfig`
   - `gitignore_global` → linked to `~/.gitignore_global`
   - `ghostty/config` → linked to `~/.config/ghostty/config`
-  - `zsh/aliases.zsh` → linked to `~/.oh-my-zsh/custom/aliases.zsh` (loaded automatically). Includes `bwls [search]`, a readable list of Bitwarden items.
+  - `zsh/aliases.zsh` → linked to `~/.oh-my-zsh/custom/aliases.zsh` (loaded automatically). Includes `update-mac-setup` (pull the latest version and rerun the setup) and `bwls [search]` (a readable list of Bitwarden items).
 
   A linked file replaces the existing one, which is kept as `<name>.backup`.
 
