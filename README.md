@@ -25,23 +25,25 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/set
 
 That needs nothing but the built-in `curl`. The script downloads this repo to `~/mac-setup`, asks for your password once, installs Homebrew (which also installs the Xcode Command Line Tools and git) and then everything else. At the end it turns `~/mac-setup` into a Git repo, so `git pull` works later.
 
-It is safe to run again (`zsh ~/mac-setup/setup.sh`): steps that are already done are skipped.
+It is safe to run again (`zsh ~/mac-setup/setup.sh`), including on a Mac that is already set up: steps that are already done are skipped, installed Homebrew packages are not upgraded, and your own `~/.gitconfig` is kept.
 
-Afterwards, set your Git identity (kept out of this repo):
+On a new Mac, set your Git identity afterwards (it stays in `~/.gitconfig`, not in this repo):
 
 ```sh
-git config --file ~/.gitconfig.local user.name  "Your Name"
-git config --file ~/.gitconfig.local user.email "you@example.com"
+git config --global user.name  "Your Name"
+git config --global user.email "you@example.com"
 ```
 
 ## What is in here
 
 - `setup.sh`: the setup script
 - `Brewfile`: command-line tools, apps and fonts. Refresh it from a Mac with `brew bundle dump --file=Brewfile --force`, then trim.
-- `dotfiles/`: linked into your home folder by `setup.sh` (an existing file is kept as `<name>.backup`)
-  - `gitconfig` → `~/.gitconfig`
-  - `gitignore_global` → `~/.gitignore_global`
-  - `ghostty/config` → `~/.config/ghostty/config`
+- `dotfiles/`: used by `setup.sh`
+  - `gitconfig`: shared Git settings, included from your `~/.gitconfig`
+  - `gitignore_global` → linked to `~/.gitignore_global`
+  - `ghostty/config` → linked to `~/.config/ghostty/config`
+
+  A linked file replaces the existing one, which is kept as `<name>.backup`.
 
 Secrets (tokens, keys) do not belong here. Keep them in a password or secrets manager.
 

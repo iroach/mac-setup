@@ -1,9 +1,6 @@
-# Shared Git settings. Your name and email go in ~/.gitconfig.local (not in this repo):
-#   git config --file ~/.gitconfig.local user.name  "Your Name"
-#   git config --file ~/.gitconfig.local user.email "you@example.com"
-
-[include]
-	path = ~/.gitconfig.local
+# Shared Git settings, included from ~/.gitconfig by setup.sh:
+#   git config --global --add include.path ~/mac-setup/dotfiles/gitconfig
+# Your name, email and credentials stay in ~/.gitconfig (not in this repo).
 
 [core]
 	quotepath = false

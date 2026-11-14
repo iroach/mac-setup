@@ -64,7 +64,12 @@ step "Brewfile"
 # Homebrew only installs from third-party taps you have marked as trusted.
 brew tap openai/tools
 brew trust --formula openai/tools/tart openai/tools/softnet
-brew bundle --file="$SETUP_DIR/Brewfile"
+# --no-upgrade: install what's missing, but leave already-installed packages at their versions.
+# Not fatal: on a Mac that's already set up, an app installed outside Homebrew
+# (e.g. Ghostty downloaded from its website) makes its cask fail. Everything else still installs.
+if ! brew bundle --no-upgrade --file="$SETUP_DIR/Brewfile"; then
+  print -P "  %F{yellow}Some Brewfile items didn't install (see above). Often an app already in /Applications; continuing.%f"
+fi
 
 # --- 3. Oh My Zsh (before editing ~/.zshrc, since its installer replaces that file) ---
 step "Oh My Zsh"
@@ -106,6 +111,8 @@ rustup update stable
 step "Ruby $RUBY_VERSION, Node $NODE_VERSION (mise)"
 # Point Ruby's build at Homebrew's libraries.
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3) --with-libyaml-dir=$(brew --prefix libyaml) --with-gmp-dir=$(brew --prefix gmp) --enable-yjit"
+# Also honour projects' .ruby-version, .nvmrc and .node-version files (mise ignores them by default).
+mise settings set idiomatic_version_file_enable_tools ruby,node
 mise use -g "ruby@$RUBY_VERSION" "node@$NODE_VERSION"
 mise exec -- gem install rails --no-document
 # Cloudflare: cf = Cloudflare API (beta), wrangler = Workers/Pages development
@@ -118,8 +125,27 @@ if ! have claude; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
-# --- 8. Dotfiles (an existing file is kept as <name>.backup) ---
+# --- 8. Dotfiles ---
 step "Dotfiles"
+
+# Git: ~/.gitconfig stays your own file (name, email, credentials; tools like gh and
+# Git Credential Manager write to it). It just includes the shared settings from this repo.
+GIT_SHARED="$SETUP_DIR/dotfiles/gitconfig"
+if [[ -L ~/.gitconfig ]]; then   # undo the symlink made by earlier versions of this script
+  rm ~/.gitconfig
+  [[ -f ~/.gitconfig.backup ]] && mv ~/.gitconfig.backup ~/.gitconfig
+fi
+if ! git config --global --get-all include.path 2>/dev/null | grep -qxF "$GIT_SHARED"; then
+  git config --global --add include.path "$GIT_SHARED"
+fi
+print "  ~/.gitconfig includes $GIT_SHARED"
+if [[ -z "$(git config --global user.email 2>/dev/null)" ]]; then
+  print -P "  %F{yellow}Set your Git name and email:%f"
+  print '    git config --global user.name  "Your Name"'
+  print '    git config --global user.email "you@example.com"'
+fi
+
+# Other dotfiles are linked (an existing file is kept as <name>.backup).
 link() {
   local src="$SETUP_DIR/dotfiles/$1" dest="$2"
   mkdir -p "${dest:h}"
@@ -127,14 +153,8 @@ link() {
   ln -sfn "$src" "$dest"
   print "  $dest -> $src"
 }
-link gitconfig        ~/.gitconfig
 link gitignore_global ~/.gitignore_global
 link ghostty/config   ~/.config/ghostty/config
-if [[ ! -f ~/.gitconfig.local ]]; then
-  print -P "  %F{yellow}Set your Git name and email (kept out of this repo):%f"
-  print '    git config --file ~/.gitconfig.local user.name  "Your Name"'
-  print '    git config --file ~/.gitconfig.local user.email "you@example.com"'
-fi
 
 # --- 9. Make ~/mac-setup a Git repo (if it was downloaded with curl) so `git pull` works ---
 if [[ ! -d "$SETUP_DIR/.git" ]]; then
