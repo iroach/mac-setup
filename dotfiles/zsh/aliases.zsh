@@ -1,6 +1,9 @@
 # Personal aliases and functions.
 # Linked to ~/.oh-my-zsh/custom/aliases.zsh by setup.sh; Oh My Zsh loads it automatically.
 
+# ghostty command (e.g. ghostty +list-themes). The app doesn't add it to PATH itself.
+[[ -d /Applications/Ghostty.app/Contents/MacOS ]] && path=(/Applications/Ghostty.app/Contents/MacOS $path)
+
 # update-mac-setup: get the latest ~/mac-setup from GitHub, run setup.sh,
 # then restart the shell so new aliases and settings load.
 update-mac-setup() {

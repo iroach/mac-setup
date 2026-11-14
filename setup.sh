@@ -189,7 +189,14 @@ for cmd in brew git uv python ruby rails node yarn cf wrangler cloudflared aws r
   printf "  %-7s %s\n" "$cmd" "$($cmd --version 2>&1 | head -1)"
 done
 
-print -P "\n%F{green}Done.%f Open a new terminal (or Ghostty) to load the new shell setup."
+print -P "\n%F{green}Done.%f"
+
+# --- Last step: open Ghostty, which starts with the new shell setup loaded ---
+if [[ -d /Applications/Ghostty.app ]] && open -a Ghostty 2>/dev/null; then
+  print "Opened Ghostty with the new setup."
+else
+  print "Open a new terminal to load the new shell setup."
+fi
 }
 
 # When piped (curl … | zsh), zsh's input is the download, so give main() the keyboard
