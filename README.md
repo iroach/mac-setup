@@ -17,12 +17,15 @@ Each language version is managed by exactly one tool, so there is never any doub
 
 ## Use
 
+On a new Mac, open Terminal and run:
+
 ```sh
-git clone https://github.com/iroach/mac-setup.git ~/mac-setup
-zsh ~/mac-setup/setup.sh
+zsh -c "$(curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh)"
 ```
 
-The script asks for your password once. It installs Homebrew (which also installs the Xcode Command Line Tools and git) and then everything else. It is safe to run again: steps that are already done are skipped.
+That needs nothing but the built-in `curl`. The script downloads this repo to `~/mac-setup`, asks for your password once, installs Homebrew (which also installs the Xcode Command Line Tools and git) and then everything else. At the end it turns `~/mac-setup` into a Git repo, so `git pull` works later.
+
+It is safe to run again (`zsh ~/mac-setup/setup.sh`): steps that are already done are skipped.
 
 Afterwards, set your Git identity (kept out of this repo):
 

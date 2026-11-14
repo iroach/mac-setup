@@ -9,11 +9,15 @@
 #   Claude Code (native installer, updates itself)
 #
 # Safe to run again: each step skips what is already done.
-# Usage: ~/mac-setup/setup.sh
+#
+# On a new Mac (needs nothing but the built-in curl):
+#   zsh -c "$(curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh)"
+# From an existing copy:
+#   zsh ~/mac-setup/setup.sh
 
 set -euo pipefail
 
-SETUP_DIR="${0:A:h}"
+REPO="iroach/mac-setup"
 PYTHON_VERSION="3.13"
 RUBY_VERSION="4.0"
 NODE_VERSION="lts"
@@ -27,6 +31,18 @@ add_line() {
   touch "$file"
   grep -qxF "$line" "$file" || print -r -- "$line" >> "$file"
 }
+
+# Find the rest of the repo (Brewfile, dotfiles). If this script was run straight
+# from the web, download the repo into ~/mac-setup with curl (git isn't installed yet).
+SETUP_DIR="${0:A:h}"
+if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
+  SETUP_DIR="$HOME/mac-setup"
+  if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
+    step "Downloading $REPO to $SETUP_DIR"
+    mkdir -p "$SETUP_DIR"
+    curl -fsSL "https://github.com/$REPO/archive/refs/heads/main.tar.gz" | tar -xz --strip-components=1 -C "$SETUP_DIR"
+  fi
+fi
 
 # Ask for the password once and keep sudo alive until the script ends.
 step "Checking administrator access"
@@ -118,6 +134,16 @@ if [[ ! -f ~/.gitconfig.local ]]; then
   print -P "  %F{yellow}Set your Git name and email (kept out of this repo):%f"
   print '    git config --file ~/.gitconfig.local user.name  "Your Name"'
   print '    git config --file ~/.gitconfig.local user.email "you@example.com"'
+fi
+
+# --- 9. Make ~/mac-setup a Git repo (if it was downloaded with curl) so `git pull` works ---
+if [[ ! -d "$SETUP_DIR/.git" ]]; then
+  step "Connecting $SETUP_DIR to GitHub"
+  git -C "$SETUP_DIR" init -q -b main
+  git -C "$SETUP_DIR" remote add origin "https://github.com/$REPO.git"
+  git -C "$SETUP_DIR" fetch -q origin main
+  git -C "$SETUP_DIR" reset -q origin/main   # keeps the files, just records them as the repo's
+  git -C "$SETUP_DIR" branch -q --set-upstream-to=origin/main main
 fi
 
 # --- Summary ---
