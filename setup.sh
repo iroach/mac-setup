@@ -175,32 +175,6 @@ link gitignore_global ~/.gitignore_global
 link ghostty/config   ~/.config/ghostty/config
 link zsh/aliases.zsh  ~/.oh-my-zsh/custom/aliases.zsh
 
-# --- Terminal: close the window when the shell exits cleanly (default profile) ---
-step "Terminal settings"
-set_terminal_close_on_exit() {
-  local domain="${1:-com.apple.Terminal}" PB=/usr/libexec/PlistBuddy plist profile
-  plist="$(mktemp -d)/terminal.plist"
-  profile="$(defaults read "$domain" "Default Window Settings" 2>/dev/null || print Basic)"
-  defaults export "$domain" "$plist" 2>/dev/null || true   # missing on a new Mac; PlistBuddy creates it
-  # Terminal stores only what differs from a profile's defaults, so a profile entry may not exist yet.
-  $PB -c "Print \":Window Settings\"" "$plist" >/dev/null 2>&1 \
-    || $PB -c "Add \":Window Settings\" dict" "$plist"
-  if ! $PB -c "Print \":Window Settings:$profile\"" "$plist" >/dev/null 2>&1; then
-    $PB -c "Add \":Window Settings:$profile\" dict" \
-        -c "Add \":Window Settings:${profile}:name\" string $profile" \
-        -c "Add \":Window Settings:${profile}:type\" string Window Settings" "$plist"
-    # plutil, not PlistBuddy: PlistBuddy would store 2.09 as 2.0899999…
-    plutil -replace "Window Settings.${profile}.ProfileCurrentVersion" -float 2.09 "$plist"
-  fi
-  # shellExitAction: 0 = close the window, 1 = close if the shell exited cleanly, 2 = don't close
-  $PB -c "Set \":Window Settings:${profile}:shellExitAction\" 1" "$plist" 2>/dev/null \
-    || $PB -c "Add \":Window Settings:${profile}:shellExitAction\" integer 1" "$plist"
-  defaults import "$domain" "$plist"
-  rm -rf "${plist:h}"
-  print "  Terminal profile \"$profile\": close the window if the shell exited cleanly"
-}
-set_terminal_close_on_exit
-
 # --- 9. Make ~/mac-setup a Git repo (if it was downloaded with curl) so `git pull` works ---
 if [[ ! -d "$SETUP_DIR/.git" ]]; then
   step "Connecting $SETUP_DIR to GitHub"

@@ -31,7 +31,7 @@ That needs nothing but the built-in `curl`. The script:
 3. installs Homebrew, which also installs the Xcode Command Line Tools and git
 4. installs everything in the `Brewfile`
 5. installs Oh My Zsh, then Python (uv), Rust (rustup), Ruby, Rails and Node (mise), and Claude Code
-6. sets up the dotfiles (see below), and sets Terminal to close a window when its shell exits cleanly
+6. sets up the dotfiles (see below)
 7. turns `~/mac-setup` into a Git repo connected to GitHub
 8. prints the installed versions, pins Ghostty to the Dock and opens it with the new shell loaded
 
