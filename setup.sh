@@ -191,6 +191,15 @@ done
 
 print -P "\n%F{green}Done.%f"
 
+# --- Pin Ghostty to the Dock (skipped if it's already there) ---
+if [[ -d /Applications/Ghostty.app ]] \
+   && ! defaults read com.apple.dock persistent-apps 2>/dev/null | grep -q 'file:///Applications/Ghostty.app/'; then
+  defaults write com.apple.dock persistent-apps -array-add \
+    '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>file:///Applications/Ghostty.app/</string><key>_CFURLStringType</key><integer>15</integer></dict></dict></dict>'
+  killall Dock   # restart the Dock so it shows up
+  print "Added Ghostty to the Dock."
+fi
+
 # --- Last step: open Ghostty, which starts with the new shell setup loaded ---
 if [[ -d /Applications/Ghostty.app ]] && open -a Ghostty 2>/dev/null; then
   print "Opened Ghostty with the new setup."
