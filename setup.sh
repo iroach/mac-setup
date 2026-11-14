@@ -62,9 +62,8 @@ add_line 'eval "$(/opt/homebrew/bin/brew shellenv)"' ~/.zprofile
 # --- 2. Tools and apps from the Brewfile ---
 step "Brewfile"
 # Homebrew only installs from third-party taps you have marked as trusted.
-brew tap atlassian/acli
 brew tap openai/tools
-brew trust --formula atlassian/acli/acli openai/tools/tart openai/tools/softnet
+brew trust --formula openai/tools/tart openai/tools/softnet
 brew bundle --file="$SETUP_DIR/Brewfile"
 
 # --- 3. Oh My Zsh (before editing ~/.zshrc, since its installer replaces that file) ---
@@ -109,7 +108,8 @@ step "Ruby $RUBY_VERSION, Node $NODE_VERSION (mise)"
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3) --with-libyaml-dir=$(brew --prefix libyaml) --with-gmp-dir=$(brew --prefix gmp) --enable-yjit"
 mise use -g "ruby@$RUBY_VERSION" "node@$NODE_VERSION"
 mise exec -- gem install rails --no-document
-mise exec -- npm install -g yarn wrangler   # wrangler = Cloudflare CLI
+# Cloudflare: cf = Cloudflare API (beta), wrangler = Workers/Pages development
+mise exec -- npm install -g yarn cf wrangler
 mise reshim
 
 # --- 7. Claude Code ---
@@ -149,7 +149,7 @@ fi
 # --- Summary ---
 step "Installed versions"
 eval "$(mise activate zsh --shims)"
-for cmd in brew git uv python ruby rails node yarn wrangler cloudflared aws rustc cargo claude; do
+for cmd in brew git uv python ruby rails node yarn cf wrangler cloudflared aws rustc cargo claude; do
   printf "  %-7s %s\n" "$cmd" "$($cmd --version 2>&1 | head -1)"
 done
 

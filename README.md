@@ -11,7 +11,7 @@ Sets up a new Mac for development with one script.
 | Shell | [Oh My Zsh](https://ohmyz.sh), zoxide, fzf |
 | Terminal | [Ghostty](https://ghostty.org) |
 | AI tools | Claude (app and Claude Code), Codex, Copilot CLI |
-| Cloud | AWS CLI, Cloudflare (wrangler, cloudflared) |
+| Cloud | AWS CLI, Cloudflare (cf, wrangler, cloudflared) |
 
 Each language version is managed by exactly one tool, so there is never any doubt about which `python`, `ruby` or `node` you get.
 

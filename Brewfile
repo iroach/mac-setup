@@ -5,7 +5,6 @@
 #   Python -> uv     Ruby/Node -> mise     Rust -> rustup
 
 # Third-party taps (setup.sh marks their formulas as trusted first)
-tap "atlassian/acli"
 tap "openai/tools"
 
 # --- Version managers ---
@@ -39,9 +38,8 @@ brew "postgresql@14"   # consider postgresql@17 for new projects
 
 # --- Cloud and work tools ---
 brew "awscli"
-brew "cloudflared"     # Cloudflare tunnels (wrangler is installed with npm by setup.sh)
+brew "cloudflared"     # Cloudflare tunnels (cf and wrangler are installed with npm by setup.sh)
 brew "bitwarden-cli"
-brew "atlassian/acli/acli"
 brew "openconnect"
 
 # --- Media, documents and other utilities ---
