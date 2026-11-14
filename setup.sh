@@ -7,8 +7,11 @@
 #   rustup    -> Rust
 #   Oh My Zsh -> shell
 #   Claude Code (native installer, updates itself)
+#   dotfiles/ -> Git settings (included), gitignore, Ghostty config, zsh aliases (linked)
+#   Finally pins Ghostty to the Dock and opens it with the new shell loaded.
 #
-# Safe to run again: each step skips what is already done.
+# Safe to run again, also on a Mac that's already set up: each step skips what is
+# already done, and installed Homebrew packages are not upgraded. See README.md.
 #
 # On a new Mac (needs nothing but the built-in curl):
 #   curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
