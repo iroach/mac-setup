@@ -155,6 +155,7 @@ link() {
 }
 link gitignore_global ~/.gitignore_global
 link ghostty/config   ~/.config/ghostty/config
+link zsh/aliases.zsh  ~/.oh-my-zsh/custom/aliases.zsh
 
 # --- 9. Make ~/mac-setup a Git repo (if it was downloaded with curl) so `git pull` works ---
 if [[ ! -d "$SETUP_DIR/.git" ]]; then
