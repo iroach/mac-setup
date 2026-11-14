@@ -1,0 +1,49 @@
+# Shared Git settings. Your name and email go in ~/.gitconfig.local (not in this repo):
+#   git config --file ~/.gitconfig.local user.name  "Your Name"
+#   git config --file ~/.gitconfig.local user.email "you@example.com"
+
+[include]
+	path = ~/.gitconfig.local
+
+[core]
+	quotepath = false
+	excludesfile = ~/.gitignore_global
+	editor = nvim
+
+[color]
+	ui = auto
+
+[alias]
+	st = status
+	oneline = log --oneline
+	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+	up = !git remote update -p && git merge --ff-only @{u}
+	myhist = !git log --author=\"$(git config user.name)\" --format=%H | xargs git show --name-only --format=-------------%n%Cred%s%Creset%n%Cblue%h%Creset
+
+[log]
+	decorate = short
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[init]
+	defaultBranch = main
+
+[diff]
+	tool = meld
+[merge]
+	tool = meld
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
