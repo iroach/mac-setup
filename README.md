@@ -31,7 +31,7 @@ That needs nothing but the built-in `curl`. The script:
 3. installs Homebrew, which also installs the Xcode Command Line Tools and git
 4. installs everything in the `Brewfile`
 5. installs Oh My Zsh, then Python (uv), Rust (rustup), Ruby, Rails and Node (mise), and Claude Code
-6. sets up the dotfiles (see below)
+6. sets up the dotfiles (see below), and sets Terminal to close a window when its shell exits cleanly
 7. turns `~/mac-setup` into a Git repo connected to GitHub
 8. prints the installed versions, pins Ghostty to the Dock and opens it with the new shell loaded
 
@@ -71,7 +71,7 @@ After pushing a change, `raw.githubusercontent.com` can serve the old `setup.sh`
 ## What is in here
 
 - `setup.sh`: the setup script. Its body is a `main` function called on the last line, so a partial download runs nothing when piped into zsh.
-- `Brewfile`: command-line tools, apps and fonts. To see what a Mac has that's not in here: `brew bundle dump --file=- | diff - Brewfile`.
+- `Brewfile`: command-line tools and apps. To see what a Mac has that's not in here: `brew bundle dump --file=- | diff - Brewfile`.
 - `dotfiles/`:
   - `gitconfig`: shared Git settings, included from your `~/.gitconfig` (`include.path`)
   - `gitignore_global` → linked to `~/.gitignore_global`

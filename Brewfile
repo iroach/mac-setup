@@ -62,6 +62,5 @@ cask "copilot-cli"
 cask "meld"
 cask "git-credential-manager"
 
-# --- Fonts ---
-cask "font-jetbrains-mono-nerd-font"
-# font-monaspice-nerd-font left out: it unpacks hundreds of font files and takes minutes to install.
+# No fonts: Ghostty uses the built-in SF Mono. Nerd Fonts (e.g. font-jetbrains-mono-nerd-font)
+# unpack 100-150 font files / 250-400 MB each and stall setup for minutes.
