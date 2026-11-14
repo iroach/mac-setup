@@ -36,8 +36,13 @@ add_line() {
 # from the web, download the repo into ~/mac-setup with curl (git isn't installed yet).
 SETUP_DIR="${0:A:h}"
 if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
+  # Run from the web: use ~/mac-setup, and make sure it matches the latest version on GitHub.
   SETUP_DIR="$HOME/mac-setup"
-  if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
+  if [[ -d "$SETUP_DIR/.git" ]]; then
+    step "Updating $SETUP_DIR"
+    git -C "$SETUP_DIR" pull --ff-only \
+      || print -P "  %F{yellow}Couldn't update $SETUP_DIR (local changes?). Using it as it is.%f"
+  else
     step "Downloading $REPO to $SETUP_DIR"
     mkdir -p "$SETUP_DIR"
     curl -fsSL "https://github.com/$REPO/archive/refs/heads/main.tar.gz" | tar -xz --strip-components=1 -C "$SETUP_DIR"
@@ -148,6 +153,10 @@ fi
 # Other dotfiles are linked (an existing file is kept as <name>.backup).
 link() {
   local src="$SETUP_DIR/dotfiles/$1" dest="$2"
+  if [[ ! -e "$src" ]]; then
+    print -P "  %F{yellow}Skipping $dest: $src is missing%f"
+    return 0
+  fi
   mkdir -p "${dest:h}"
   [[ -e "$dest" && ! -L "$dest" ]] && mv "$dest" "$dest.backup"
   ln -sfn "$src" "$dest"
