@@ -20,7 +20,7 @@ Each language version is managed by exactly one tool, so there is never any doub
 On a new Mac, open Terminal and run:
 
 ```sh
-zsh -c "$(curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh)"
+curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
 ```
 
 That needs nothing but the built-in `curl`. The script downloads this repo to `~/mac-setup`, asks for your password once, installs Homebrew (which also installs the Xcode Command Line Tools and git) and then everything else. At the end it turns `~/mac-setup` into a Git repo, so `git pull` works later.

@@ -11,12 +11,16 @@
 # Safe to run again: each step skips what is already done.
 #
 # On a new Mac (needs nothing but the built-in curl):
-#   zsh -c "$(curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh)"
+#   curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
 # From an existing copy:
 #   zsh ~/mac-setup/setup.sh
+#
+# Everything runs inside main(), which is only called on the last line. So when the
+# script is piped into zsh, nothing runs until the whole file has downloaded.
 
 set -euo pipefail
 
+SCRIPT_DIR="${0:A:h}"   # where this file is (meaningless when piped; checked below)
 REPO="iroach/mac-setup"
 PYTHON_VERSION="3.13"
 RUBY_VERSION="4.0"
@@ -32,9 +36,11 @@ add_line() {
   grep -qxF "$line" "$file" || print -r -- "$line" >> "$file"
 }
 
+main() {
+
 # Find the rest of the repo (Brewfile, dotfiles). If this script was run straight
 # from the web, download the repo into ~/mac-setup with curl (git isn't installed yet).
-SETUP_DIR="${0:A:h}"
+SETUP_DIR="$SCRIPT_DIR"
 if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
   # Run from the web: use ~/mac-setup, and make sure it matches the latest version on GitHub.
   SETUP_DIR="$HOME/mac-setup"
@@ -184,3 +190,12 @@ for cmd in brew git uv python ruby rails node yarn cf wrangler cloudflared aws r
 done
 
 print -P "\n%F{green}Done.%f Open a new terminal (or Ghostty) to load the new shell setup."
+}
+
+# When piped (curl … | zsh), zsh's input is the download, so give main() the keyboard
+# instead; otherwise a prompt inside the script would read lines of the script itself.
+if { : </dev/tty } 2>/dev/null; then
+  main "$@" </dev/tty
+else
+  main "$@"
+fi
