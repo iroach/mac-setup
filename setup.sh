@@ -81,6 +81,13 @@ step "Brewfile"
 # Homebrew only installs from third-party taps you have marked as trusted.
 brew tap openai/tools
 brew trust --formula openai/tools/tart openai/tools/softnet
+# brew bundle prints an "Installing …" line for every missing item up front, then installs
+# them all with no further output, so the last line (the Brewfile's last item) sits there
+# for the whole install. Say so, but only when there is something to install.
+if ! brew bundle check --no-upgrade --file="$SETUP_DIR/Brewfile" >/dev/null 2>&1; then
+  print -P "  %F{cyan}Homebrew lists everything it will install first, then installs it all without further output.%f"
+  print -P "  %F{cyan}On a new Mac that takes several minutes after the last \"Installing\" line. It isn't stuck.%f"
+fi
 # --no-upgrade: install what's missing, but leave already-installed packages at their versions.
 # Not fatal: on a Mac that's already set up, an app installed outside Homebrew
 # (e.g. Ghostty downloaded from its website) makes its cask fail. Everything else still installs.
