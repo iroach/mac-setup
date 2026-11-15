@@ -56,7 +56,7 @@ brew "openai/tools/tart"
 
 # --- Apps ---
 cask "ghostty"
-cask "claude"                  # Claude desktop app (Claude Code is installed by setup.sh)
+# No Claude desktop app: Claude Code (the CLI) is installed by setup.sh with Anthropic's installer.
 cask "codex"
 cask "copilot-cli"
 cask "meld"
