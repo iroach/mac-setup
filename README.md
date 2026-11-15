@@ -10,7 +10,7 @@ Sets up a Mac for development with one command.
 | Rust | [rustup](https://rustup.rs) |
 | Shell | [Oh My Zsh](https://ohmyz.sh), zoxide, fzf |
 | Terminal | [Ghostty](https://ghostty.org) (pinned to the Dock) |
-| AI tools | Claude (app and Claude Code), Codex, Copilot CLI |
+| AI tools | Claude Code, Codex, Copilot CLI |
 | Cloud | AWS CLI, Cloudflare (`cf`, `wrangler`, `cloudflared`) |
 | Passwords | Bitwarden CLI (`bw`) |
 
