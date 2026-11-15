@@ -24,7 +24,7 @@ Open Terminal and run:
 curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
 ```
 
-That needs nothing but the built-in `curl`. The script:
+That needs nothing but the built-in `curl`, and works on Apple Silicon and Intel Macs. (On Intel, Tart and any app without an Intel build fail their Brewfile line; the script warns and carries on.) The script:
 
 1. downloads this repo to `~/mac-setup` (or updates it, if it's already there)
 2. asks for your password once

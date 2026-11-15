@@ -67,11 +67,18 @@ fi
 
 # --- 1. Homebrew (also installs the Xcode Command Line Tools, which include git) ---
 step "Homebrew"
-if ! have brew && [[ ! -x /opt/homebrew/bin/brew ]]; then
+# Homebrew lives in /opt/homebrew on Apple Silicon and /usr/local on Intel.
+# (sysctl, not uname -m: under Rosetta, uname -m says x86_64 on Apple Silicon too.)
+if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == 1 ]]; then
+  BREW=/opt/homebrew/bin/brew
+else
+  BREW=/usr/local/bin/brew
+fi
+if [[ ! -x "$BREW" ]]; then
   NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-eval "$(/opt/homebrew/bin/brew shellenv)"
-add_line 'eval "$(/opt/homebrew/bin/brew shellenv)"' ~/.zprofile
+eval "$("$BREW" shellenv)"
+add_line "eval \"\$($BREW shellenv)\"" ~/.zprofile
 
 # --- 2. Tools and apps from the Brewfile ---
 step "Brewfile"
