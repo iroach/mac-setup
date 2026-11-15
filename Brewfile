@@ -45,7 +45,7 @@ brew "openconnect"
 # --- Media, documents and other utilities ---
 brew "ffmpeg"
 brew "pandoc"
-brew "pdfly"
+# No pdfly: if needed, `uv tool install pdfly` (prebuilt, no Homebrew Python build).
 brew "libpst"
 brew "guile"
 brew "jmeter"
