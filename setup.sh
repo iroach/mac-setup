@@ -212,7 +212,7 @@ fi
 step "Installed versions"
 eval "$(mise activate zsh --shims)"
 for cmd in brew git uv python ruby rails node yarn cf wrangler cloudflared aws rustc cargo claude; do
-  printf "  %-7s %s\n" "$cmd" "$($cmd --version 2>&1 | head -1)"
+  printf "  %-11s %s\n" "$cmd" "$($cmd --version 2>&1 | head -1)"
 done
 
 print -P "\n%F{green}Done.%f"
