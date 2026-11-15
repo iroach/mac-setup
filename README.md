@@ -24,7 +24,11 @@ Open Terminal and run:
 curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
 ```
 
-That needs nothing but the built-in `curl`, and works on Apple Silicon and Intel Macs. (On Intel, Tart and any app without an Intel build fail their Brewfile line; the script warns and carries on.) The script:
+That needs nothing but the built-in `curl`, and works on Apple Silicon and Intel Macs.
+
+On Intel, Tart and any app without an Intel build fail their Brewfile line; the script warns and carries on. Homebrew supports Intel Macs only at its lowest tier and plans to stop running on them in or after September 2027 (see [Support Tiers](https://docs.brew.sh/Support-Tiers)), so expect more packages to build from source and setup to take much longer.
+
+The script:
 
 1. downloads this repo to `~/mac-setup` (or updates it, if it's already there)
 2. asks for your password once
