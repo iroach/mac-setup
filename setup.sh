@@ -24,6 +24,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="${0:A:h}"   # where this file is (meaningless when piped; checked below)
+SCRIPT_NAME="${0:t}"    # "setup.sh" when run as a file, "zsh" when piped (captured here: inside main, $0 is "main")
 REPO="iroach/mac-setup"
 PYTHON_VERSION="3.13"
 RUBY_VERSION="4.0"
@@ -43,8 +44,10 @@ main() {
 
 # Find the rest of the repo (Brewfile, dotfiles). If this script was run straight
 # from the web, download the repo into ~/mac-setup with curl (git isn't installed yet).
+# When piped, SCRIPT_DIR is just the current directory, so don't trust it even if it
+# happens to hold a Brewfile (e.g. your own ~/Brewfile when run from your home folder).
 SETUP_DIR="$SCRIPT_DIR"
-if [[ ! -f "$SETUP_DIR/Brewfile" ]]; then
+if [[ "$SCRIPT_NAME" != setup.sh || ! -f "$SETUP_DIR/Brewfile" ]]; then
   # Run from the web: use ~/mac-setup, and make sure it matches the latest version on GitHub.
   SETUP_DIR="$HOME/mac-setup"
   if [[ -d "$SETUP_DIR/.git" ]]; then
@@ -91,8 +94,12 @@ if [[ ! -d ~/.oh-my-zsh ]]; then
   RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# Oh My Zsh plugins
-sed -i '' 's/^plugins=(.*)$/plugins=(git gh aws rails aliases alias-finder)/' ~/.zshrc
+# Oh My Zsh plugins: add ours to the plugins=(...) list, keeping any already there.
+# The list may span several lines; it is rewritten on one line.
+perl -0pi -e 's{^plugins=\(([^)]*)\)}{
+  my @have = split " ", $1; my %seen = map { $_ => 1 } @have;
+  "plugins=(" . join(" ", @have, grep { !$seen{$_} } qw(git gh aws rails aliases alias-finder)) . ")"
+}me' ~/.zshrc
 
 # Shell setup for the tools below, kept in one marked block.
 if ! grep -q '# >>> mac-setup >>>' ~/.zshrc 2>/dev/null; then
@@ -149,10 +156,14 @@ if [[ -L ~/.gitconfig ]]; then   # undo the symlink made by earlier versions of 
   rm ~/.gitconfig
   [[ -f ~/.gitconfig.backup ]] && mv ~/.gitconfig.backup ~/.gitconfig
 fi
-if ! git config --global --get-all include.path 2>/dev/null | grep -qxF "$GIT_SHARED"; then
-  git config --global --add include.path "$GIT_SHARED"
+if [[ ! -f "$GIT_SHARED" ]]; then   # Git silently ignores an include that doesn't exist
+  print -P "  %F{yellow}Skipping the Git include: $GIT_SHARED is missing%f"
+else
+  if ! git config --global --get-all include.path 2>/dev/null | grep -qxF "$GIT_SHARED"; then
+    git config --global --add include.path "$GIT_SHARED"
+  fi
+  print "  ~/.gitconfig includes $GIT_SHARED"
 fi
-print "  ~/.gitconfig includes $GIT_SHARED"
 if [[ -z "$(git config --global user.email 2>/dev/null)" ]]; then
   print -P "  %F{yellow}Set your Git name and email:%f"
   print '    git config --global user.name  "Your Name"'
@@ -176,7 +187,8 @@ link ghostty/config   ~/.config/ghostty/config
 link zsh/aliases.zsh  ~/.oh-my-zsh/custom/aliases.zsh
 
 # --- 9. Make ~/mac-setup a Git repo (if it was downloaded with curl) so `git pull` works ---
-if [[ ! -d "$SETUP_DIR/.git" ]]; then
+# Only ever ~/mac-setup: never turn some other folder (like your home folder) into this repo.
+if [[ "$SETUP_DIR" == "$HOME/mac-setup" && ! -d "$SETUP_DIR/.git" ]]; then
   step "Connecting $SETUP_DIR to GitHub"
   git -C "$SETUP_DIR" init -q -b main
   git -C "$SETUP_DIR" remote add origin "https://github.com/$REPO.git"
