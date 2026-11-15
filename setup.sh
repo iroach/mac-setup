@@ -123,6 +123,11 @@ source <(fzf --zsh)
 # <<< mac-setup <<<
 EOF
 fi
+# No duplicate PATH entries (otherwise each nested shell adds ~/.local/bin again).
+# Added separately so ~/.zshrc files that already have the block get it too.
+if ! grep -q '^typeset -U path' ~/.zshrc; then
+  perl -pi -e '$_ .= "typeset -U path                                # no duplicate PATH entries\n" if $_ eq "# >>> mac-setup >>>\n"' ~/.zshrc
+fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # --- 4. Python with uv ---
