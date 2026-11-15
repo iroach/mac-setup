@@ -24,7 +24,11 @@ Open Terminal and run:
 curl -fsSL https://raw.githubusercontent.com/iroach/mac-setup/main/setup.sh | zsh
 ```
 
-That needs nothing but the built-in `curl`. The script:
+That needs nothing but the built-in `curl`, and works on Apple Silicon and Intel Macs.
+
+On an Intel Mac, the first run takes hours, not minutes: see [On an Intel Mac](#on-an-intel-mac).
+
+The script:
 
 1. downloads this repo to `~/mac-setup` (or updates it, if it's already there)
 2. asks for your password once
@@ -57,6 +61,18 @@ Things worth checking first on an older Mac:
 - A `~/.tool-versions` or `~/.ruby-version` in your **home folder** (e.g. left over from asdf) overrides mise's global Ruby and Node everywhere under your home folder. Delete it, or run `mise install` to install what it asks for.
 - `python3` becomes uv's Python, ahead of any python.org or Homebrew Python on your PATH.
 - Shared Git settings win where they overlap with yours (e.g. `core.editor = nvim`).
+
+### On an Intel Mac
+
+The script works, but the first run is slow. Homebrew supports Intel Macs only at its lowest tier and plans to stop running on them in or after September 2027 ([Support Tiers](https://docs.brew.sh/Support-Tiers)). Most packages have no prebuilt Intel version, so Homebrew compiles them.
+
+- **Why it takes hours:** `uv`, `mise`, `zoxide`, `gitui`, `watchman`, `pdfly`, `bitwarden-cli` and `cocoapods` are written in Rust (or need it to build). To build any of them, Homebrew first builds its own Rust, and Rust needs LLVM. `neovim` pulls in 29 dependencies, including a whole Python just to build documentation for one of them. Some things do come prebuilt (e.g. GHC for `pandoc`).
+- **Times seen on a 16-thread Core i9:** LLVM 1 h 12 min, Rust 28 min, `uv` 15 min, `gettext` 10 min, `gitui` under 3 min. Most of the rest take seconds to a few minutes each.
+- **It looks stuck but isn't:** Homebrew shows little while compiling. `top -o cpu` shows `clang` or `rustc` working. A single `rustc` at 100% for a long time is the final optimization step of a Rust program, so it's nearly done. To see what's still to install: `brew bundle check --verbose --no-upgrade --file=~/mac-setup/Brewfile`.
+- **Keep it awake:** run `caffeinate -dims` in another terminal (a sleeping Mac pauses the build), and keep a laptop plugged in.
+- **Stopping is safe:** a rerun skips what's done. Only the package being built at that moment starts over.
+- **Afterwards:** `brew autoremove` removes build-only packages such as LLVM and Rust (about 2 GB). Check what it lists first. A later `brew upgrade` of `uv`, `mise` or `zoxide` builds again from source.
+- Tart and any app without an Intel build fail their Brewfile line; the script warns and carries on.
 
 ## Update
 
@@ -133,3 +149,4 @@ Notes on the VM:
 
 - **Bitwarden without retyping the master password:** [`rbw`](https://github.com/doy/rbw) (unofficial, unlocks once and auto-locks after a timeout), or a `bwu` function that keeps the `bw` session in the macOS Keychain.
 - **Developer secrets:** Bitwarden Secrets Manager (`bws run -- <command>`) instead of tokens in shell files.
+- **Faster Intel setup:** on Intel, install `uv`, `mise` and `zoxide` with their official installers (`https://astral.sh/uv/install.sh`, `https://mise.run`, zoxide's `install.sh`), which download prebuilt Intel versions in seconds. Skip the optional Rust and Haskell tools (`gitui`, `watchman`, `pdfly`, `bitwarden-cli`, `cocoapods`, `pandoc`) with `unless Hardware::CPU.intel?` in the Brewfile. Nothing would need LLVM or Rust built then. This goes against "Homebrew for command-line tools", so it's Intel only, and those three tools would update with `uv self update` and `mise self-update` instead of `brew upgrade`.
