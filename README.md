@@ -10,7 +10,7 @@ Sets up a Mac for development with one command.
 | Rust | [rustup](https://rustup.rs) |
 | Shell | [Oh My Zsh](https://ohmyz.sh), zoxide, fzf |
 | Terminal | [Ghostty](https://ghostty.org) (pinned to the Dock) |
-| AI tools | Claude (app and Claude Code), Codex, Copilot CLI |
+| AI tools | Claude Code, Codex, Copilot CLI |
 | Cloud | AWS CLI, Cloudflare (`cf`, `wrangler`, `cloudflared`) |
 | Passwords | Bitwarden CLI (`bw`) |
 
@@ -51,7 +51,7 @@ git config --global user.email "you@example.com"
 The script is safe to run again, including on a Mac set up by hand:
 
 - steps that are already done are skipped
-- Homebrew packages that are already installed are **not** upgraded (`brew bundle --no-upgrade`)
+- Homebrew packages and Rails that are already installed are **not** upgraded (`brew bundle --no-upgrade`, `gem install --conservative`). To upgrade Rails: `gem update rails`
 - an app already in `/Applications` but not installed by Homebrew (e.g. Ghostty from its website) makes its Brewfile line fail; the script warns and carries on
 - your `~/.gitconfig` is kept; the shared settings are only *included* from it
 - a dotfile it replaces is kept as `<name>.backup`

@@ -145,7 +145,8 @@ export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3) --with
 # Also honour projects' .ruby-version, .nvmrc and .node-version files (mise ignores them by default).
 mise settings set idiomatic_version_file_enable_tools ruby,node
 mise use -g "ruby@$RUBY_VERSION" "node@$NODE_VERSION"
-mise exec -- gem install rails --no-document
+# --conservative: skip if Rails is already installed (plain `gem install` reinstalls it every run).
+mise exec -- gem install rails --no-document --conservative
 # Cloudflare: cf = Cloudflare API (beta), wrangler = Workers/Pages development
 mise exec -- npm install -g yarn cf wrangler
 mise reshim
