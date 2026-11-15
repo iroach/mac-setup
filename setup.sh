@@ -82,9 +82,12 @@ step "Brewfile"
 brew tap openai/tools
 brew trust --formula openai/tools/tart openai/tools/softnet
 # --no-upgrade: install what's missing, but leave already-installed packages at their versions.
+# --verbose: without it, brew bundle prints an "Installing …" line for every missing item up
+# front, then installs them all silently, so the Brewfile's last item looks stuck for minutes
+# (much longer on Intel, where more is built from source). This shows each item as it goes.
 # Not fatal: on a Mac that's already set up, an app installed outside Homebrew
 # (e.g. Ghostty downloaded from its website) makes its cask fail. Everything else still installs.
-if ! brew bundle --no-upgrade --file="$SETUP_DIR/Brewfile"; then
+if ! brew bundle --no-upgrade --verbose --file="$SETUP_DIR/Brewfile"; then
   print -P "  %F{yellow}Some Brewfile items didn't install (see above). Often an app already in /Applications; continuing.%f"
 fi
 
