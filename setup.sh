@@ -26,7 +26,7 @@ set -euo pipefail
 SCRIPT_DIR="${0:A:h}"   # where this file is (meaningless when piped; checked below)
 SCRIPT_NAME="${0:t}"    # "setup.sh" when run as a file, "zsh" when piped (captured here: inside main, $0 is "main")
 REPO="iroach/mac-setup"
-PYTHON_VERSION="3.13"
+PYTHON_VERSION="3.14"
 RUBY_VERSION="4.0"
 NODE_VERSION="lts"
 

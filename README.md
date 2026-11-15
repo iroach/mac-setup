@@ -51,7 +51,7 @@ git config --global user.email "you@example.com"
 The script is safe to run again, including on a Mac set up by hand:
 
 - steps that are already done are skipped
-- Homebrew packages and Rails that are already installed are **not** upgraded (`brew bundle --no-upgrade`, `gem install --conservative`). To upgrade Rails: `gem update rails`
+- Homebrew packages and Rails that are already installed are **not** upgraded (`brew bundle --no-upgrade`, `gem install --conservative`). `update-mac` upgrades Homebrew packages later. To upgrade Rails: `gem update rails`
 - an app already in `/Applications` but not installed by Homebrew (e.g. Ghostty from its website) makes its Brewfile line fail; the script warns and carries on
 - your `~/.gitconfig` is kept; the shared settings are only *included* from it
 - a dotfile it replaces is kept as `<name>.backup`
@@ -71,7 +71,7 @@ The script works, but the first run is slow. Homebrew supports Intel Macs only a
 - **It looks stuck but isn't:** Homebrew shows little while compiling. `top -o cpu` shows `clang` or `rustc` working. A single `rustc` at 100% for a long time is the final optimization step of a Rust program, so it's nearly done. To see what's still to install: `brew bundle check --verbose --no-upgrade --file=~/mac-setup/Brewfile`.
 - **Keep it awake:** run `caffeinate -dims` in another terminal (a sleeping Mac pauses the build), and keep a laptop plugged in.
 - **Stopping is safe:** a rerun skips what's done. Only the package being built at that moment starts over.
-- **Afterwards:** `brew autoremove` removes build-only packages such as LLVM and Rust (about 2 GB). Check what it lists first. A later `brew upgrade` of `uv`, `mise` or `zoxide` builds again from source.
+- **Afterwards:** `brew autoremove` removes build-only packages such as LLVM and Rust (about 2 GB). Check what it lists first. A later `brew upgrade` of `uv`, `mise` or `zoxide` builds again from source, and `update-mac` runs `brew upgrade`, so an update can take a while when one of them has a new version.
 - Tart and any app without an Intel build fail their Brewfile line; the script warns and carries on.
 
 ## Update
@@ -80,7 +80,7 @@ The script works, but the first run is slow. Homebrew supports Intel Macs only a
 update-mac
 ```
 
-This pulls the latest version of `~/mac-setup`, reruns `setup.sh`, and restarts the shell. The long form is `cd ~/mac-setup && git pull && zsh setup.sh`.
+This pulls the latest version of `~/mac-setup`, upgrades Homebrew packages (`brew upgrade`), reruns `setup.sh`, and restarts the shell. The long form is `cd ~/mac-setup && git pull && brew upgrade && zsh setup.sh`.
 
 After pushing a change, `raw.githubusercontent.com` can serve the old `setup.sh` for up to about 5 minutes, so the curl one-liner may lag behind. `update-mac` doesn't have that delay.
 
@@ -93,7 +93,7 @@ After pushing a change, `raw.githubusercontent.com` can serve the old `setup.sh`
   - `gitignore_global` → linked to `~/.gitignore_global`
   - `ghostty/config` → linked to `~/.config/ghostty/config`
   - `zsh/aliases.zsh` → linked to `~/.oh-my-zsh/custom/aliases.zsh` (Oh My Zsh loads it automatically). It contains:
-    - `update-mac`: pull the latest setup and rerun it
+    - `update-mac`: pull the latest setup, upgrade Homebrew packages and rerun the setup
     - `bwls [search]`: a readable list of Bitwarden items, name and username only. Unlock first: `export BW_SESSION="$(bw unlock --raw)"`
     - the `ghostty` command on your PATH (e.g. `ghostty +list-themes`)
 - `CLAUDE.md`: notes for working on this repo with Claude Code
