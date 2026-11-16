@@ -29,10 +29,10 @@ brew "wget"
 # --- Development ---
 brew "cmake"
 # brew "watchman"        # off: for React Native (Metro) and Jest watch mode. Uncomment to install.
-brew "cocoapods"
+# brew "cocoapods"       # off: projects pin it in their Gemfile (`bundle exec pod`). Uncomment to install.
 brew "swiftlint"
 # No JDK: if a project needs Java, `mise use java@temurin-21` (prebuilt, per project, works on Intel).
-brew "pkl"
+# brew "pkl"             # off: only used for a workshop. Uncomment to install.
 # brew "postgresql@17"   # off: not needed on every Mac. Uncomment to install, or run it in Docker per project.
 
 # --- Cloud and work tools ---
