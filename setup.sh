@@ -124,9 +124,12 @@ source <(fzf --zsh)
 EOF
 fi
 # No duplicate PATH entries (otherwise each nested shell adds ~/.local/bin again).
-# Added separately so ~/.zshrc files that already have the block get it too.
-if ! grep -q '^typeset -U path' ~/.zshrc; then
-  perl -pi -e '$_ .= "typeset -U path                                # no duplicate PATH entries\n" if $_ eq "# >>> mac-setup >>>\n"' ~/.zshrc
+# Both names: `typeset -U path` alone doesn't dedupe `export PATH=...` assignments.
+# Added separately so ~/.zshrc files that already have the block get it too; this
+# also replaces the `typeset -U path` line written by an earlier version.
+if ! grep -q '^typeset -U PATH path' ~/.zshrc; then
+  perl -ni -e 'print unless /^typeset -U path\b/;
+    print "typeset -U PATH path                           # no duplicate PATH entries\n" if $_ eq "# >>> mac-setup >>>\n"' ~/.zshrc
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
