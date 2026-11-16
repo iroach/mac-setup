@@ -19,7 +19,7 @@ brew "gmp"
 # --- Shell and terminal tools ---
 brew "git"
 brew "gh"
-brew "gitui"
+# brew "gitui"           # off: not used lately. Uncomment to install.
 brew "neovim"
 brew "fzf"
 brew "zoxide"
