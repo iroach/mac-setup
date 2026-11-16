@@ -33,7 +33,7 @@ brew "cocoapods"
 brew "swiftlint"
 # No JDK: if a project needs Java, `mise use java@temurin-21` (prebuilt, per project, works on Intel).
 brew "pkl"
-brew "postgresql@14"   # consider postgresql@17 for new projects
+brew "postgresql@17"
 
 # --- Cloud and work tools ---
 brew "awscli"
