@@ -146,7 +146,7 @@ Notes on the VM:
 
 - The vanilla image differs from a brand-new Mac in two ways: the Xcode Command Line Tools are already installed, and `sudo` needs no password. So those two parts of the script aren't really exercised.
 - Copy and paste between your Mac and the VM doesn't work with the vanilla image (that needs the Tart guest agent), so type the commands.
-- `tart list` shows your VMs; `tart delete test` removes one; `tart prune --entries=caches` removes downloaded images.
+- `tart list` shows your VMs; `tart delete test` removes one; `tart prune --entries=caches --older-than=0` removes downloaded images (it needs a limit such as `--older-than`).
 
 ## Open ideas
 
