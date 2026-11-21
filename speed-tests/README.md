@@ -24,7 +24,7 @@ Sequential results are in MB/s; random results in IOPS (operations per second). 
 | Machine | Seq. write (MB/s) | Seq. read (MB/s) | Seq. read, uncached (MB/s) | Random 4K read (IOPS) | Random 4K write (IOPS) |
 |---|--:|--:|--:|--:|--:|
 | MacBook Pro, M5 Pro | 5,385 | 13,701 | 13,984 | 28,309 | 28,279 |
-| Mac mini, M4 | 2,377 (3,292 without run 1) | 3,481 | 3,405 | 16,880 | 16,858 |
+| Mac mini, M4 | 3,292 | 3,496 | 3,384 | 15,259 | 15,239 |
 | Tart VM on the MacBook Pro, FileVault **off** | 4,704 | 6,655 | 6,147 | 4,598 | 4,601 |
 | Tart VM on the MacBook Pro, FileVault **on** | 3,472 | 1,850 | 1,873 | 4,763 | 4,769 |
 
@@ -63,12 +63,9 @@ Runs 1–3 were made while a VM was running on the same SSD, which probably held
 
 | Run | Seq. write | Seq. read | Seq. read, uncached (32 GB) | Random 4K read | Random 4K write | Notes |
 |---|--:|--:|--:|--:|--:|---|
-| 1 | 546 | 3,453 | 3,449 | 20,121 | 20,097 | first version of the script; write looks like an outlier |
-| 2 | 3,361 | 3,492 | 3,453 | 11,909 | 11,890 | |
-| 3 | 3,223 | 3,499 | 3,314 | 18,609 | 18,587 | |
-| **Average** | **2,377** | **3,481** | **3,405** | **16,880** | **16,858** | |
-
-Run 1's write (546 MB/s) is probably an outlier, likely something else using the disk at the time. Without it, the write average is **3,292 MB/s**. Random 4K varied a lot between runs (11.9k–20.1k).
+| 1 | 3,361 | 3,492 | 3,453 | 11,909 | 11,890 | |
+| 2 | 3,223 | 3,499 | 3,314 | 18,609 | 18,587 | |
+| **Average** | **3,292** | **3,496** | **3,384** | **15,259** | **15,239** | |
 
 ### Tart VM, FileVault off
 
