@@ -96,7 +96,9 @@ After pushing a change, `raw.githubusercontent.com` can serve the old `setup.sh`
     - `update-mac`: pull the latest setup, upgrade Homebrew packages and rerun the setup
     - `bwls [search]`: a readable list of Bitwarden items, name and username only. Unlock first: `export BW_SESSION="$(bw unlock --raw)"`
     - the `ghostty` command on your PATH (e.g. `ghostty +list-themes`)
-- `disk-speed.sh`: measure disk speed with fio, like Blackmagic Disk Speed Test but from the command line (it also works in a VM, where the App Store doesn't). `zsh ~/mac-setup/disk-speed.sh` tests the disk your home folder is on; add a path such as `/Volumes/Ext` to test another disk, or `--quick` to skip the large uncached read. Uses the same settings everywhere, so results from different Macs can be compared.
+- `speed-tests/`: disk speed tests and results
+  - `disk-speed.sh`: measure disk speed with fio, like Blackmagic Disk Speed Test but from the command line (it also works in a VM, where the App Store doesn't). `zsh ~/mac-setup/speed-tests/disk-speed.sh` tests the disk your home folder is on; add a path such as `/Volumes/Ext` to test another disk, or `--quick` to skip the large uncached read. Uses the same settings everywhere, so results from different Macs can be compared.
+  - `README.md`: results for my Macs and Tart VMs, every run plus averages
 - `CLAUDE.md`: notes for working on this repo with Claude Code
 
 Secrets (tokens, keys) do not belong here. Keep them in a password or secrets manager.

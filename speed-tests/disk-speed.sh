@@ -2,9 +2,9 @@
 # disk-speed.sh: measure a Mac's disk speed with fio, like Blackmagic Disk Speed Test
 # but from the command line (also works in a VM, where the App Store doesn't).
 #
-#   zsh ~/mac-setup/disk-speed.sh                 # test the disk your home folder is on
-#   zsh ~/mac-setup/disk-speed.sh /Volumes/Ext    # test another disk
-#   zsh ~/mac-setup/disk-speed.sh --quick         # skip the large uncached read test
+#   zsh ~/mac-setup/speed-tests/disk-speed.sh                 # test the disk your home folder is on
+#   zsh ~/mac-setup/speed-tests/disk-speed.sh /Volumes/Ext    # test another disk
+#   zsh ~/mac-setup/speed-tests/disk-speed.sh --quick         # skip the large uncached read test
 #
 # Tests (same settings on every Mac, so results can be compared):
 #   sequential write and read: 1 MB blocks, 10 GB file, 8 requests in flight
