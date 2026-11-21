@@ -15,7 +15,7 @@
 # easier on the SSD, so its write number can be higher than this one.
 # Needs fio (installed with Homebrew if missing). Test files are always deleted.
 
-set -euo pipefail
+set -uo pipefail   # -e is set inside main, which runs in a subshell (see the end)
 
 QUICK=0
 TARGET="$HOME"
@@ -28,6 +28,7 @@ for arg in "$@"; do
 done
 
 main() {
+  set -e
   if ! command -v fio >/dev/null 2>&1; then
     if command -v brew >/dev/null 2>&1; then
       print -P "%F{blue}==>%f Installing fio"
@@ -37,10 +38,6 @@ main() {
       exit 1
     fi
   fi
-  [[ -d "$TARGET" && -w "$TARGET" ]] || { print -P "%F{red}Can't write to $TARGET%f" >&2; exit 1; }
-
-  DIR=$(mktemp -d "$TARGET/.disk-speed.XXXXXX")
-  trap 'rm -rf "$DIR"' EXIT INT TERM
 
   local ram_gb free_gb big_gb
   ram_gb=$(( $(sysctl -n hw.memsize) / 1073741824 ))
@@ -55,7 +52,7 @@ main() {
   (( free_gb >= 12 )) || { print -P "%F{red}Need at least 12 GB free, have ${free_gb} GB.%f" >&2; exit 1; }
 
   print -P "\n%F{blue}==>%f Running (about 1 to 2 minutes)"
-  local common=(--direct=1 --ioengine=posixaio --output-format=json)
+  local common=(--thread --direct=1 --ioengine=posixaio --output-format=json)
   local f="$DIR/fiotest"
 
   run fio --name=w --rw=write --bs=1m --size=10g --iodepth=8 --refill_buffers --end_fsync=1 "${common[@]}" --filename="$f"
@@ -96,4 +93,27 @@ run() { "$@" > "$DIR/out.json"; }
 mbs()  { plutil -extract "jobs.0.$1.bw_bytes" raw "$DIR/out.json" | awk '{printf "%\047.0f", $1/1000000}'; }
 iops() { plutil -extract "jobs.0.$1.iops" raw "$DIR/out.json" | awk '{printf "%\047.0f", $1}'; }
 
-main
+[[ -d "$TARGET" && -w "$TARGET" ]] || { print -P "%F{red}Can't write to $TARGET%f" >&2; exit 1; }
+
+# The test files go in $DIR, which is deleted however the script ends: finished,
+# failed, Ctrl+C, or Terminal window closed. main runs in a background subshell so
+# this script always gets control back to clean up (zsh's EXIT trap doesn't fire
+# reliably when a function exits on an error or signal).
+# fio ignores HUP (closed window) and is stopped with INT instead: killed by HUP it
+# leaks a shared-memory segment, and after a few of those fio can't start at all.
+DIR=$(mktemp -d "$TARGET/.disk-speed.XXXXXX")
+sub=""
+stop() {
+  if [[ -n "$sub" ]]; then
+    pkill -INT -P "$sub" fio 2>/dev/null
+    wait "$sub" 2>/dev/null
+  fi
+  rm -rf "$DIR"
+  exit 130
+}
+trap stop INT TERM HUP
+( trap '' HUP; main ) &
+sub=$!
+wait "$sub"; rc=$?
+rm -rf "$DIR"
+exit $rc
