@@ -124,7 +124,7 @@ Best median build time per project, in seconds, built from `build-results.csv` b
 | Mac mini | Mac16,10 | Apple M4 | 10 (4P+6E) | 24 GB | False | 1.00 | 15.8 | 43 | 35.0 | 48.4 | 8.3 | 66.7 | 165.1 | 2026-11-22 |
 | MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | – | – | – | 61.9 | 44.4 | 11.8 | 48.6 | – | 2026-11-22 |
 | MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | – | – | – | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
-| MacBook Pro Intel | MacBookPro16,1 | Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz | 16 (8P+E) | 16 GB | False | 2.52 | 40.8 | 121 | 68.0 | 71.5 | 17.3 | – | – | 2026-11-22 |
+| MacBook Pro Intel | MacBookPro16,1 | Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz | 16 threads (8 cores) | 16 GB | False | 2.52 | 40.8 | 121 | 68.0 | 71.5 | 17.3 | – | – | 2026-11-22 |
 <!-- build-summary:end -->
 
 First pilot results, on the Mac mini (M4, 3 runs each):
@@ -152,7 +152,7 @@ One row per project per run of the script.
 |---|---|
 | `date`, `machine`, `model`, `chip`, `ram_gb`, `macos`, `vm` | as in `results.csv` |
 | `arch` | `arm64` or `x86_64` |
-| `cores`, `p_cores`, `e_cores` | CPU cores, and how many are performance and efficiency cores (blank on Intel) |
+| `cores`, `p_cores`, `e_cores` | CPU cores (on Intel, threads), and how many are performance and efficiency cores. On Intel, `p_cores` is the physical cores and `e_cores` is blank |
 | `clang`, `xcode` | the Command Line Tools' clang and the Xcode version (blank without Xcode) |
 | `power`, `low_power` | `AC` or `battery`, and `True` when Low Power Mode was on |
 | `project`, `version` | what was built |

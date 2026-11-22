@@ -40,7 +40,8 @@ table=$(awk '
     if (!(m in seen)) {
       seen[m] = 1; order[++machines] = m
       cores = F[col["cores"]]
-      if (F[col["p_cores"]] != "") cores = cores " (" F[col["p_cores"]] "P+" F[col["e_cores"]] "E)"
+      if (F[col["e_cores"]] != "") cores = cores " (" F[col["p_cores"]] "P+" F[col["e_cores"]] "E)"
+      else if (F[col["p_cores"]] != "") cores = cores " threads (" F[col["p_cores"]] " cores)"   # Intel
       info[m] = sprintf("| %s | %s | %s | %s | %s GB | %s |", m, F[col["model"]], F[col["chip"]], cores, F[col["ram_gb"]], F[col["vm"]])
     }
     if (F[col["start_ms"]] != "")

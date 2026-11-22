@@ -97,19 +97,25 @@ main() {
   arch=$(uname -m)
   ram_gb=$(( $(sysctl -n hw.memsize) / 1073741824 ))
   macos=$(sw_vers -productVersion)
-  pcores=$(sysctl -n hw.perflevel0.physicalcpu 2>/dev/null || true)
+  # (Pipelines here read all their input, never head or awk's exit: with pipefail, a
+  # writer killed by SIGPIPE would fail the pipeline, and set -e would end the run.)
+  # Apple silicon: performance and efficiency cores. Intel reports all its physical
+  # cores as one level, so p_cores is the physical cores and e_cores is blank.
+  pcores=$(sysctl -n hw.perflevel0.physicalcpu 2>/dev/null || sysctl -n hw.physicalcpu)
   ecores=$(sysctl -n hw.perflevel1.physicalcpu 2>/dev/null || true)
+  local cores_text="$jobs cores ($pcores performance, $ecores efficiency)"
+  [[ -n "$ecores" ]] || cores_text="$jobs threads ($pcores cores)"
   [[ $(sysctl -n kern.hv_vmm_present 2>/dev/null) == 1 ]] && vm=True
-  clang_v=$(clang --version 2>/dev/null | head -1 | sed 's/ (.*//')
+  clang_v=$(clang --version 2>/dev/null | sed -n '1s/ (.*//p')
   find_xcode
-  [[ -n "$XCODE_DIR" ]] && xcode_v=$(DEVELOPER_DIR=$XCODE_DIR xcodebuild -version 2>/dev/null | head -1 | sed 's/^Xcode //')
-  [[ $(pmset -g batt 2>/dev/null | head -1) == *"Battery Power"* ]] && power=battery
+  [[ -n "$XCODE_DIR" ]] && xcode_v=$(DEVELOPER_DIR=$XCODE_DIR xcodebuild -version 2>/dev/null | sed -n '1s/^Xcode //p')
+  [[ $(pmset -g batt 2>/dev/null | sed -n 1p) == *"Battery Power"* ]] && power=battery
   [[ $(pmset -g 2>/dev/null | awk '/lowpowermode/ {print $2}') == 1 ]] && low_power=True
-  [[ -n "$NAME" ]] || NAME=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ {print $2; exit}')
+  [[ -n "$NAME" ]] || NAME=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ && !n++ {print $2}')
   [[ -n "$NAME" ]] || NAME=$model
 
   print -P "\n%B$NAME%b ($model)"
-  print "  $chip ($arch), $jobs cores${pcores:+ ($pcores performance, ${ecores:-0} efficiency)}, ${ram_gb} GB RAM, macOS $macos, VM: $vm"
+  print "  $chip ($arch), $cores_text, ${ram_gb} GB RAM, macOS $macos, VM: $vm"
   print "  $clang_v; Xcode: ${xcode_v:-not installed}; power: $power${${low_power:#False}:+, Low Power Mode on}"
   [[ $power == AC ]] || print -P "  %F{yellow}On battery: the Mac may run slower. Plug it in for comparable results.%f"
   [[ $low_power == False ]] || print -P "  %F{yellow}Low Power Mode is on: results will be slower. Turn it off for comparable results.%f"
@@ -368,6 +374,7 @@ zmodload zsh/zselect
 tree() { local c; print $1; for c in $(pgrep -P $1); do tree $c; done; }
 stop() {
   local pids=() p i alive
+  print -P "\n%F{yellow}Stopped by $1;%f stopping the builds and deleting $DIR" >&2
   if [[ -n "$sub" ]]; then
     for i in 1 2; do          # twice: catch anything started while the first pass ran
       pids+=($(tree $sub))
@@ -383,9 +390,13 @@ stop() {
   for i in {1..20}; do rm -rf "$DIR" 2>/dev/null; [[ -e "$DIR" ]] || break; zselect -t 20; done
   exit 130
 }
-trap stop INT TERM HUP
+trap 'stop INT' INT
+trap 'stop TERM' TERM
+trap 'stop HUP' HUP
 ( trap '' HUP; main ) &
 sub=$!
 wait "$sub"; rc=$?
 rm -rf "$DIR"
+# A failed build prints its own message; this makes any other failure visible too.
+(( rc == 0 )) || print -P "%F{red}build-speed.sh stopped with exit code $rc.%f" >&2
 exit $rc
