@@ -1,0 +1,12 @@
+date,machine,model,chip,ram_gb,macos,vm,filevault,quick,seq_write_mbs,seq_read_mbs,seq_read_uncached_mbs,rand_read_iops,rand_write_iops,notes
+2026-11-21,"MacBook Pro","Mac17,12","Apple M5 Pro",24,27.2.1,False,True,True,4887,13837,,27433,27401,"first version of the script; a VM was running"
+2026-11-21,"MacBook Pro","Mac17,12","Apple M5 Pro",24,27.2.1,False,True,True,5434,13592,,24318,24286,"a VM was running"
+2026-11-21,"MacBook Pro","Mac17,12","Apple M5 Pro",24,27.2.1,False,True,True,5601,13626,,24707,24664,"a VM was running"
+2026-11-21,"MacBook Pro","Mac17,12","Apple M5 Pro",24,27.2.1,False,True,False,5616,13748,13984,36777,36766,"no VMs running"
+2026-11-21,"Mac mini","Mac16,10","Apple M4",24,27.3,False,False,False,3361,3492,3453,11909,11890,""
+2026-11-21,"Mac mini","Mac16,10","Apple M4",24,27.3,False,False,False,3223,3499,3314,18609,18587,""
+2026-11-21,"Tart VM on MacBook Pro","VirtualMac2,1","Apple M5 Pro",4,27.2.1,True,False,False,4709,6480,6101,4302,4303,""
+2026-11-21,"Tart VM on MacBook Pro","VirtualMac2,1","Apple M5 Pro",4,27.2.1,True,False,False,4699,6830,6192,4893,4899,""
+2026-11-21,"Tart VM on MacBook Pro","VirtualMac2,1","Apple M5 Pro",4,27.2.1,True,True,False,3304,1840,1874,4425,4431,"right after macOS setup"
+2026-11-21,"Tart VM on MacBook Pro","VirtualMac2,1","Apple M5 Pro",4,27.2.1,True,True,True,3211,1790,,4888,4894,""
+2026-11-21,"Tart VM on MacBook Pro","VirtualMac2,1","Apple M5 Pro",4,27.2.1,True,True,False,3900,1919,1871,4976,4981,"a clone of the FileVault-off VM with FileVault turned on"
