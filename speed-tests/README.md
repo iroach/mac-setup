@@ -121,6 +121,7 @@ Best median build time per project, in seconds, built from `build-results.csv` b
 |---|---|---|---|--:|---|--:|--:|--:|--:|--:|---|
 | Mac mini | Mac16,10 | Apple M4 | 10 (4P+6E) | 24 GB | False | 35.0 | 48.4 | 8.3 | 66.7 | 165.1 | 2026-11-22 |
 | MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | 61.9 | 44.4 | 11.8 | 48.6 | – | 2026-11-22 |
+| MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
 <!-- build-summary:end -->
 
 First pilot results, on the Mac mini (M4, 3 runs each):
