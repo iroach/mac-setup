@@ -116,7 +116,7 @@ How it measures:
 
 ### Build summary
 
-Best median build time per project, in seconds, built from `build-results.csv` by [`build-summary.sh`](build-summary.sh). Runs on AC power with Low Power Mode off are preferred. The Start, clang and File columns are the program-start test from the machine's newest run that has it. "–" means it wasn't run there.
+One row per machine name and CPU count, so a VM run with 4 CPUs and one with 18 get separate rows. Best median build time per project, in seconds, built from `build-results.csv` by [`build-summary.sh`](build-summary.sh). Runs on AC power with Low Power Mode off are preferred. The Start, clang and File columns are the program-start test from the machine's newest run that has it. "–" means it wasn't run there.
 
 <!-- build-summary:start -->
 | Machine | Model | Chip | Cores | RAM | VM | Start (ms) | clang (ms) | File (µs) | openssl (s) | ffmpeg (s) | sdl (s) | netnewswire (s) | ghostty (s) | Date |

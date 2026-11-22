@@ -3,7 +3,8 @@
 #
 #   zsh ~/mac-setup/speed-tests/build-summary.sh
 #
-# One row per machine (the machine column, so each VM host gets its own row), one
+# One row per machine and CPU count (the machine and cores columns, so each VM host,
+# and each CPU setting of a VM, gets its own row), one
 # column per project: the best median build time in seconds. The program-start
 # columns come from the machine's newest run that has them. Runs on AC power with
 # Low Power Mode off come first, then the fastest. The table goes between the
@@ -36,14 +37,14 @@ table=$(awk '
   NF == 0 { next }
   {
     parse($0)
-    m = F[col["machine"]]; p = F[col["project"]]
+    m = F[col["machine"]] SUBSEP F[col["cores"]]; p = F[col["project"]]
     if (!(m in seen)) {
       seen[m] = 1; order[++machines] = m
       cores = F[col["cores"]]
       if (F[col["vm"]] == "True") cores = cores " virtual"
       else if (F[col["e_cores"]] != "") cores = cores " (" F[col["p_cores"]] "P+" F[col["e_cores"]] "E)"
       else if (F[col["p_cores"]] != "") cores = cores " threads (" F[col["p_cores"]] " cores)"   # Intel
-      info[m] = sprintf("| %s | %s | %s | %s | %s GB | %s |", m, F[col["model"]], F[col["chip"]], cores, F[col["ram_gb"]], F[col["vm"]])
+      info[m] = sprintf("| %s | %s | %s | %s | %s GB | %s |", F[col["machine"]], F[col["model"]], F[col["chip"]], cores, F[col["ram_gb"]], F[col["vm"]])
     }
     if (F[col["start_ms"]] != "")
       start[m] = sprintf(" %s | %s | %s |", F[col["start_ms"]], F[col["clang_ms"]], F[col["file_us"]])
