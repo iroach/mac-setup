@@ -112,6 +112,13 @@ main() {
   [[ -n "$ecores" ]] || cores_text="$jobs threads ($pcores cores)"
   [[ $(sysctl -n kern.hv_vmm_present 2>/dev/null) == 1 ]] && vm=True
   [[ $vm == False ]] || cores_text="$jobs virtual CPUs"
+  # Without the Command Line Tools (or Xcode), clang is only a stub that opens an
+  # install prompt; say so instead of failing on the first compile.
+  if ! xcode-select -p >/dev/null 2>&1; then
+    print -P "%F{red}The Command Line Tools aren't installed.%f Install them with: xcode-select --install" >&2
+    print "Then run this again." >&2
+    exit 1
+  fi
   clang_v=$(clang --version 2>/dev/null | sed -n '1s/ (.*//p')
   find_xcode
   [[ -n "$XCODE_DIR" ]] && xcode_v=$(DEVELOPER_DIR=$XCODE_DIR xcodebuild -version 2>/dev/null | sed -n '1s/^Xcode //p')
@@ -136,7 +143,12 @@ main() {
   local machine="$(date +%F),$(q "$NAME"),$(q "$model"),$(q "$chip"),$arch,$jobs,$pcores,$ecores,$ram_gb,$macos,$vm,$(q "$clang_v"),$(q "$xcode_v"),$power,$low_power"
   local tail="$start_ms,$clang_ms,$file_us,$(q "$NOTE")"
 
-  local p reason rows=() lines=("$start_line") i cfg bld work med mn mx spread
+  local p reason rows=() lines=("$start_line") i cfg bld work med mn mx spread failed
+  # From here a failing project doesn't end the run: it's reported, and the other
+  # projects' results are still printed and saved. (set -e is off in main, and each
+  # step runs in a subshell with set -e on, outside any if or ||, where zsh would
+  # ignore it.)
+  set +e
   # --start-only: one row with no project.
   (( START_ONLY )) && rows+=("$machine,,,,,,,,,$tail")
   for p in $PROJECTS; do
@@ -148,22 +160,35 @@ main() {
     fi
     LOG=$CACHE/logs/$p.log
     : > "$LOG"
-    fetch_$p
-    cfg=() bld=()
+    ( set -e; fetch_$p )
+    if (( $? )); then
+      print -P "  %F{red}Failed:%f couldn't download or set up $p (log: $LOG)"
+      lines+=("$(printf '  %-12s %s' $p "failed: couldn't download or set up (log: $LOG)")")
+      continue
+    fi
+    cfg=() bld=() failed=""
     for i in {1..$RUNS}; do
       work=$DIR/$p
       rm -rf "$work"; mkdir -p "$work"
       print -n "  run $i of $RUNS: configure "
-      step "$work" configure_$p;  cfg+=($REPLY); print -n "${REPLY}s, build "
-      step "$work" build_$p;      bld+=($REPLY); print "${REPLY}s"
+      step "$work" configure_$p; if (( $? )); then failed=configure; break; fi
+      cfg+=($REPLY); print -n "${REPLY}s, build "
+      step "$work" build_$p;     if (( $? )); then failed=build; break; fi
+      bld+=($REPLY); print "${REPLY}s"
       rm -rf "$work"
     done
+    rm -rf "$work"
+    if [[ -n $failed ]]; then
+      lines+=("$(printf '  %-12s %s' $p "failed: the $failed step (log: $LOG)")")
+      continue
+    fi
     med=$(median $bld) mn=${${(on)bld}[1]} mx=${${(on)bld}[-1]}
     spread=$(awk -v a=$mn -v b=$mx -v m=$med 'BEGIN {printf "%.1f", (b - a) / m * 100}')
     lines+=("$(printf '  %-12s %-10s build %7ss (runs %ss to %ss, spread %s%%), configure %ss' \
       $p $(ver_$p) $med $mn $mx $spread $(median $cfg))")
     rows+=("$machine,$p,$(q "$(ver_$p)"),$jobs,$RUNS,$(median $cfg),$med,$mn,$mx,$tail")
   done
+  set -e
 
   print -P "\n%BResults%b (lower is better)"
   print -l -- $lines
@@ -315,6 +340,7 @@ configure_ghostty() {
   ln -s $CACHE/zig-global/p zig-global/p
 }
 build_ghostty() {
+  local ZIG=$CACHE/zig-${arch/arm64/aarch64}-macos-$ZIG_VER/zig
   ZIG_GLOBAL_CACHE_DIR=$PWD/zig-global zig_env $ZIG build $GHOSTTY_OPTS
   [[ -d zig-out/Ghostty.app ]]
 }
@@ -356,7 +382,8 @@ need_brew() {
 step() {
   local dir=$1 fn=$2 t0=$EPOCHREALTIME
   print "\n=== $fn $(date '+%T') ===" >> "$LOG"
-  if ! (cd "$dir" && $fn) >> "$LOG" 2>&1; then
+  ( cd "$dir" || exit 1; set -e; $fn ) >> "$LOG" 2>&1
+  if (( $? )); then
     print -P "\n  %F{red}$fn failed.%f Last lines of $LOG:" >&2
     tail -30 "$LOG" | sed 's/^/    /' >&2
     return 1
