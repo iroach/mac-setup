@@ -37,11 +37,11 @@ What it shows:
 
 ## Machines
 
-| Machine | Details |
-|---|---|
-| MacBook Pro | Apple M5 Pro, 24 GB RAM, 1 TB SSD, macOS 27.2.1, FileVault on |
-| Mac mini | Apple M4, 24 GB RAM, macOS 27.3 |
-| Tart VM | On the MacBook Pro. Built from Apple's IPSW (`tart create --from-ipsw=latest --disk-size 100`), 4 CPUs, 4 GB RAM, 100 GB disk (raw format), macOS 27.2.1, bridged networking |
+| Machine | Model | Details |
+|---|---|---|
+| MacBook Pro | Mac17,12 | Apple M5 Pro, 24 GB RAM, 1 TB SSD, macOS 27.2.1, FileVault on |
+| Mac mini | Mac16,10 | Apple M4, 24 GB RAM, macOS 27.3 |
+| Tart VM | – | On the MacBook Pro. Built from Apple's IPSW (`tart create --from-ipsw=latest --disk-size 100`), 4 CPUs, 4 GB RAM, 100 GB disk (raw format), macOS 27.2.1, bridged networking |
 
 ## All runs
 
