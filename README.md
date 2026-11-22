@@ -100,8 +100,10 @@ After pushing a change, `raw.githubusercontent.com` can serve the old `setup.sh`
   - `disk-speed.sh`: measure disk speed with fio, like Blackmagic Disk Speed Test but from the command line (it also works in a VM, where the App Store doesn't). `zsh ~/mac-setup/speed-tests/disk-speed.sh` tests the disk your home folder is on; add a path such as `/Volumes/Ext` to test another disk, or `--quick` to skip the large uncached read. Uses the same settings everywhere, so results from different Macs can be compared.
   - `results.csv`: every run, with model, VM and FileVault columns. `disk-speed.sh --save` adds a run
   - `summary.sh`: rebuilds the summary in `README.md` from `results.csv`
-  - `build-speed.sh`: measure build speed by building pinned open-source projects (OpenSSL, FFmpeg, SDL with the Command Line Tools; NetNewsWire and Ghostty with Xcode) the same way on every Mac. `--project openssl` builds just one; `--save` adds the results to `build-results.csv`
+  - `build-speed.sh`: measure build speed by building pinned open-source projects (OpenSSL, FFmpeg, SDL with the Command Line Tools; NetNewsWire and Ghostty with Xcode) the same way on every Mac. `--project openssl` builds just one; `--save` adds the results to `build-results.csv`; `--submit` opens a GitHub issue with them, for review
   - `build-results.csv` and `build-summary.sh`: every build run, and the script that rebuilds the build summary in `README.md`
+  - `vm-build-speed.sh`: run `build-speed.sh` in a throwaway Tart VM on this Mac, to compare with the Mac itself (security software doesn't see inside the VM)
+  - `import-results.py`: checks results submitted in a "Build speed results" issue and adds them to `build-results.csv`; used by `.github/workflows/import-build-results.yml` when an issue gets the `approved` label
   - `README.md`: one best-case run per model, and how to test another Mac
 - `CLAUDE.md`: notes for working on this repo with Claude Code
 

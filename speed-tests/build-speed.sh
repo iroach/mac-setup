@@ -7,6 +7,7 @@
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --runs 1            # one build per project instead of 3
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --save              # also add the results to build-results.csv
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --start-only        # only the program-start test (about 15 seconds)
+#   zsh ~/mac-setup/speed-tests/build-speed.sh --submit            # submit the results in a GitHub issue, for review
 #       --name "Tart VM on MacBook Pro"   what to call this machine (default: its model name)
 #       --note "a VM was running"         a note to keep with the run
 #
@@ -30,7 +31,9 @@
 # Each is done 3 times; the median goes into every CSV row of the run.
 #
 # Every run ends with CSV rows for build-results.csv. --save appends them and
-# rebuilds the build summary in README.md (with build-summary.sh).
+# rebuilds the build summary in README.md (with build-summary.sh). --submit opens a
+# "Build speed results" issue form with the rows filled in instead: no git needed,
+# and a maintainer reviews them before they're added.
 # (Help text ends on the line above.)
 
 set -uo pipefail   # -e is set inside main, which runs in a subshell (see the end)
@@ -40,7 +43,8 @@ HERE=${0:A:h}
 CSV=$HERE/build-results.csv
 CACHE=$HOME/Library/Caches/mac-setup/build-speed
 ALL=(openssl ffmpeg sdl netnewswire ghostty)
-RUNS=3 SAVE=0 NAME="" NOTE="" START_ONLY=0
+RUNS=3 SAVE=0 NAME="" NOTE="" START_ONLY=0 SUBMIT=0
+ISSUE_URL=https://github.com/iroach/mac-setup/issues/new
 PROJECTS=()
 while (( $# )); do
   case "$1" in
@@ -48,6 +52,7 @@ while (( $# )); do
     --runs)    RUNS=${2:?--runs needs a value}; shift ;;
     --save)    SAVE=1 ;;
     --start-only) START_ONLY=1 ;;
+    --submit)  SUBMIT=1 ;;
     --name)    NAME=${2:?--name needs a value}; shift ;;
     --note)    NOTE=${2:?--note needs a value}; shift ;;
     -h|--help) sed -n '2,/Help text ends/p' "${0:A}" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -106,6 +111,7 @@ main() {
   local cores_text="$jobs cores ($pcores performance, $ecores efficiency)"
   [[ -n "$ecores" ]] || cores_text="$jobs threads ($pcores cores)"
   [[ $(sysctl -n kern.hv_vmm_present 2>/dev/null) == 1 ]] && vm=True
+  [[ $vm == False ]] || cores_text="$jobs virtual CPUs"
   clang_v=$(clang --version 2>/dev/null | sed -n '1s/ (.*//p')
   find_xcode
   [[ -n "$XCODE_DIR" ]] && xcode_v=$(DEVELOPER_DIR=$XCODE_DIR xcodebuild -version 2>/dev/null | sed -n '1s/^Xcode //p')
@@ -169,6 +175,30 @@ main() {
     print -P "\n%F{blue}==>%f Added to $CSV"
     zsh "$HERE/build-summary.sh"
   fi
+  (( SUBMIT )) && submit $rows
+  return 0
+}
+
+# Open the "Build speed results" issue form with these rows filled in. Over SSH
+# (in a VM, say), print the link instead, for a Mac that's signed in to GitHub.
+submit() {
+  local url="$ISSUE_URL?template=build-results.yml&title=$(urlencode "Build results: $NAME")&rows=$(urlencode "${(F)@}")"
+  print -P "\n%F{blue}==>%f Submit these results: fill in the form and select Create"
+  print -r -- "SUBMIT-URL: $url"
+  [[ -z "${SSH_CONNECTION:-}" ]] && open "$url" 2>/dev/null || true
+}
+
+# Percent-encode a string for a URL, byte by byte.
+urlencode() {
+  local LC_ALL=C s=$1 out="" c i
+  for (( i = 1; i <= ${#s}; i++ )); do
+    c=${s[i]}
+    case $c in
+      [A-Za-z0-9.~_-]) out+=$c ;;
+      *) out+=$(printf '%%%02X' "'$c") ;;
+    esac
+  done
+  print -rn -- $out
 }
 
 # --- Projects ----------------------------------------------------------------

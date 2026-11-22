@@ -152,7 +152,7 @@ One row per project per run of the script.
 |---|---|
 | `date`, `machine`, `model`, `chip`, `ram_gb`, `macos`, `vm` | as in `results.csv` |
 | `arch` | `arm64` or `x86_64` |
-| `cores`, `p_cores`, `e_cores` | CPU cores (on Intel, threads), and how many are performance and efficiency cores. On Intel, `p_cores` is the physical cores and `e_cores` is blank |
+| `cores`, `p_cores`, `e_cores` | CPU cores (on Intel, threads), and how many are performance and efficiency cores. On Intel, `p_cores` is the physical cores and `e_cores` is blank. In a VM, `cores` is the virtual CPUs |
 | `clang`, `xcode` | the Command Line Tools' clang and the Xcode version (blank without Xcode) |
 | `power`, `low_power` | `AC` or `battery`, and `True` when Low Power Mode was on |
 | `project`, `version` | what was built |
@@ -162,13 +162,39 @@ One row per project per run of the script.
 | `start_ms`, `clang_ms`, `file_us` | the program-start test: ms per program start, ms per empty clang compile, µs per small file. Blank in rows from before the test existed |
 | `notes` | anything that affected the run, from `--note` |
 
-### Testing another Mac or VM
+### Testing another Mac and submitting the results
 
-As for the disk test: get the repo on the machine, switch to a new branch, plug in a laptop and quit anything heavy, then run
+Anyone can submit results; they're added after review. Get the repo (`git clone https://github.com/iroach/mac-setup.git ~/mac-setup`), plug in a laptop and quit anything heavy, then run
 
 ```sh
-zsh ~/mac-setup/speed-tests/build-speed.sh --save
-zsh ~/mac-setup/speed-tests/build-speed.sh --save --name "Tart VM on Mac mini"
+zsh ~/mac-setup/speed-tests/build-speed.sh --submit --name "MacBook Pro M5 Pro"
 ```
 
-and commit the new rows with a pull request. A full run with every project takes about 10 to 20 minutes on an M-series Mac. Without the repo, paste the printed CSV rows at the bottom of `build-results.csv` and run `zsh ~/mac-setup/speed-tests/build-summary.sh`.
+When it finishes, a "Build speed results" issue opens in your browser with the results filled in. Say how the Mac is set up (personal, work-managed with security software, or a VM), add any notes, and select **Create**. Nothing is pushed from the Mac, and you don't need git set up for pushing. A full run with every project takes about 10 to 20 minutes on an M-series Mac; `--project openssl,ffmpeg,sdl` skips the Xcode projects.
+
+To review a submission (maintainers):
+
+1. Check the rows in the issue: the machine name, the numbers, and that nothing identifies a person or organization.
+2. Add the **approved** label. The [Import build results](../.github/workflows/import-build-results.yml) action checks every field strictly with [`import-results.py`](import-results.py), adds the rows to `build-results.csv` (with the issue number and the setup answer in `notes`), rebuilds the summary, and opens a pull request that closes the issue. If a row is wrong, it comments on the issue instead.
+3. Review and merge the pull request.
+
+To import an issue by hand instead: `gh issue view 42 --json body -q .body | python3 -I speed-tests/import-results.py 42`, then `zsh speed-tests/build-summary.sh`.
+
+`--save` still adds the rows to `build-results.csv` directly, for a Mac where you'll commit them yourself.
+
+### Testing in a VM: security software or not
+
+Security software on a Mac (EDR, antivirus) checks programs and files on the Mac itself, but not inside a virtual machine. Running the test in a Tart VM on the same Mac shows how much that software costs: compare the VM's program-start results and configure times (which run one program at a time, so CPU count matters little) with the Mac's own. See [#17](https://github.com/iroach/mac-setup/issues/17). On the Mac mini, which has no such software, the VM's numbers match the Mac's.
+
+[`vm-build-speed.sh`](vm-build-speed.sh) does this with [Tart](https://tart.run) (`brew install cirruslabs/cli/tart`):
+
+```sh
+# Once: make the build-speed-base VM from a macOS image with an "admin" user
+# (password admin), Remote Login and passwordless sudo, such as a Cirrus Labs vanilla image.
+zsh ~/mac-setup/speed-tests/vm-build-speed.sh prepare ghcr.io/cirruslabs/macos-golden-gate-vanilla:latest
+
+# Each test: a fresh copy of build-speed-base with 4 CPUs and 8 GB, deleted afterwards.
+zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --project openssl,ffmpeg,sdl --name "Tart VM on MacBook Pro M5 Pro" --submit
+```
+
+`prepare` installs Homebrew, the Command Line Tools and cmake in the VM, and adds your SSH key (`~/.ssh/id_ed25519`) using the VM's password once (set `VM_PASSWORD` if it isn't `admin`). `run` shares this repo with the VM, waits a minute for the VM to settle after starting, runs `build-speed.sh` there with the options given, and with `--submit` opens the issue form on this Mac. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
