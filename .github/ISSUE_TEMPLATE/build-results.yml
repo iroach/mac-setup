@@ -1,0 +1,36 @@
+name: Build speed results
+description: Submit results from speed-tests/build-speed.sh. They're added to build-results.csv after review.
+title: "Build results: "
+labels: [build-results]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `zsh speed-tests/build-speed.sh --submit` and this form opens with your results filled in. A maintainer reviews them, adds the `approved` label, and a pull request adds them to [`build-results.csv`](../blob/main/speed-tests/build-results.csv).
+
+        This repository is **public**. Leave out anything that identifies you, your employer or the computer (host names, user names, serial numbers).
+  - type: textarea
+    id: rows
+    attributes:
+      label: Results
+      description: The CSV rows build-speed.sh printed at the end of the run, unchanged.
+      render: csv
+    validations:
+      required: true
+  - type: dropdown
+    id: managed
+    attributes:
+      label: How is this Mac set up?
+      description: Security software (EDR, antivirus, MDM) can slow builds a lot, so this is kept with the results.
+      options:
+        - Personal Mac, no security software added
+        - Work-managed Mac, with security software
+        - Virtual machine
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional. Anything that affected the run, such as other apps running or a VM's host. Kept short in the CSV.
