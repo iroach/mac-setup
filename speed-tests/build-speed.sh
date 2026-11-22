@@ -6,6 +6,7 @@
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --project openssl   # one project (repeat or use commas for more)
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --runs 1            # one build per project instead of 3
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --save              # also add the results to build-results.csv
+#   zsh ~/mac-setup/speed-tests/build-speed.sh --start-only        # only the program-start test (about 15 seconds)
 #       --name "Tart VM on MacBook Pro"   what to call this machine (default: its model name)
 #       --note "a VM was running"         a note to keep with the run
 #
@@ -21,6 +22,13 @@
 # configure step is timed separately; the score is the median build time of the runs.
 # Downloads are cached in ~/Library/Caches/mac-setup/build-speed, so timing never
 # includes the network. Build folders are always deleted; logs stay in the cache.
+# Every run first does a program-start test, which shows what security software
+# (antivirus, EDR) adds to each program start and file, apart from compile speed:
+#   start: running /usr/bin/true 1,000 times      (ms per program start)
+#   clang: compiling an empty C file 200 times     (ms per compile)
+#   file:  writing 5,000 small files               (µs per file)
+# Each is done 3 times; the median goes into every CSV row of the run.
+#
 # Every run ends with CSV rows for build-results.csv. --save appends them and
 # rebuilds the build summary in README.md (with build-summary.sh).
 # (Help text ends on the line above.)
@@ -32,13 +40,14 @@ HERE=${0:A:h}
 CSV=$HERE/build-results.csv
 CACHE=$HOME/Library/Caches/mac-setup/build-speed
 ALL=(openssl ffmpeg sdl netnewswire ghostty)
-RUNS=3 SAVE=0 NAME="" NOTE=""
+RUNS=3 SAVE=0 NAME="" NOTE="" START_ONLY=0
 PROJECTS=()
 while (( $# )); do
   case "$1" in
     --project) PROJECTS+=(${(s:,:)${2:?--project needs a value}}); shift ;;
     --runs)    RUNS=${2:?--runs needs a value}; shift ;;
     --save)    SAVE=1 ;;
+    --start-only) START_ONLY=1 ;;
     --name)    NAME=${2:?--name needs a value}; shift ;;
     --note)    NOTE=${2:?--note needs a value}; shift ;;
     -h|--help) sed -n '2,/Help text ends/p' "${0:A}" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -47,6 +56,7 @@ while (( $# )); do
   shift
 done
 (( ${#PROJECTS} )) && [[ $PROJECTS != all ]] || PROJECTS=($ALL)
+(( START_ONLY )) && PROJECTS=()
 for p in $PROJECTS; do
   (( ${ALL[(Ie)$p]} )) || { print -P "%F{red}Unknown project: $p%f (one of: $ALL)" >&2; exit 1; }
 done
@@ -104,7 +114,19 @@ main() {
   [[ $power == AC ]] || print -P "  %F{yellow}On battery: the Mac may run slower. Plug it in for comparable results.%f"
   [[ $low_power == False ]] || print -P "  %F{yellow}Low Power Mode is on: results will be slower. Turn it off for comparable results.%f"
 
-  local p reason rows=() lines=() i cfg bld work med mn mx spread
+  print -P "\n%F{blue}==>%f %BProgram-start test%b"
+  start_test
+  local start_ms=$START_MS clang_ms=$CLANG_MS file_us=$FILE_US
+  local start_line="$(printf '  %-12s %s ms per program start, %s ms per empty clang compile, %s µs per small file' \
+    start $start_ms $clang_ms $file_us)"
+  print "$start_line"
+  # Everything about the machine and this run, for every CSV row.
+  local machine="$(date +%F),$(q "$NAME"),$(q "$model"),$(q "$chip"),$arch,$jobs,$pcores,$ecores,$ram_gb,$macos,$vm,$(q "$clang_v"),$(q "$xcode_v"),$power,$low_power"
+  local tail="$start_ms,$clang_ms,$file_us,$(q "$NOTE")"
+
+  local p reason rows=() lines=("$start_line") i cfg bld work med mn mx spread
+  # --start-only: one row with no project.
+  (( START_ONLY )) && rows+=("$machine,,,,,,,,,$tail")
   for p in $PROJECTS; do
     print -P "\n%F{blue}==>%f %B$p%b"
     if reason=$(can_run_$p); then :; else
@@ -128,7 +150,7 @@ main() {
     spread=$(awk -v a=$mn -v b=$mx -v m=$med 'BEGIN {printf "%.1f", (b - a) / m * 100}')
     lines+=("$(printf '  %-12s %-10s build %7ss (runs %ss to %ss, spread %s%%), configure %ss' \
       $p $(ver_$p) $med $mn $mx $spread $(median $cfg))")
-    rows+=("$(date +%F),$(q "$NAME"),$(q "$model"),$(q "$chip"),$arch,$jobs,$pcores,$ecores,$ram_gb,$macos,$vm,$(q "$clang_v"),$(q "$xcode_v"),$power,$low_power,$p,$(q "$(ver_$p)"),$jobs,$RUNS,$(median $cfg),$med,$mn,$mx,$(q "$NOTE")")
+    rows+=("$machine,$p,$(q "$(ver_$p)"),$jobs,$RUNS,$(median $cfg),$med,$mn,$mx,$tail")
   done
 
   print -P "\n%BResults%b (lower is better)"
@@ -306,8 +328,32 @@ step() {
   REPLY=$(awk -v a=$t0 -v b=$EPOCHREALTIME 'BEGIN {printf "%.1f", b - a}')
 }
 
+# Program-start test: the cost of starting a program, of a minimal compiler run, and
+# of writing a small file (in $DIR, on the same disk as the builds). Builds do these
+# thousands of times, and security software can add to each one. Sets START_MS,
+# CLANG_MS and FILE_US to the medians of 3 rounds.
+start_test() {
+  local r i t d a=() b=() c=()
+  print 'int x;' > $DIR/empty.c
+  for r in 1 2 3; do
+    t=$EPOCHREALTIME; for i in {1..1000}; do /usr/bin/true; done
+    a+=($(( (EPOCHREALTIME - t) )))                 # seconds for 1,000 = ms each
+    t=$EPOCHREALTIME; for i in {1..200}; do clang -c $DIR/empty.c -o $DIR/empty.o; done
+    b+=($(( (EPOCHREALTIME - t) * 5 )))             # ms each
+    d=$DIR/files; mkdir $d
+    t=$EPOCHREALTIME; for i in {1..5000}; do print x > $d/$i; done
+    c+=($(( (EPOCHREALTIME - t) * 200 )))           # µs each
+    rm -rf $d
+  done
+  rm -f $DIR/empty.[co]
+  START_MS=$(median %.2f $a) CLANG_MS=$(median $b) FILE_US=$(median %.0f $c)
+}
+
+# Median of numbers, printed with one decimal (or the format given first, such as %.2f).
 median() {
-  print -l -- "$@" | sort -n | awk '{v[NR] = $1} END {printf "%.1f", NR % 2 ? v[(NR + 1) / 2] : (v[NR / 2] + v[NR / 2 + 1]) / 2}'
+  local f=%.1f
+  [[ $1 == %* ]] && { f=$1; shift; }
+  print -l -- "$@" | sort -n | awk -v f=$f '{v[NR] = $1} END {printf f, NR % 2 ? v[(NR + 1) / 2] : (v[NR / 2] + v[NR / 2 + 1]) / 2}'
 }
 q() { print -rn -- "\"${1//\"/\"\"}\""; }    # quote a CSV text field
 

@@ -4,7 +4,8 @@
 #   zsh ~/mac-setup/speed-tests/build-summary.sh
 #
 # One row per machine (the machine column, so each VM host gets its own row), one
-# column per project: the best median build time in seconds. Runs on AC power with
+# column per project: the best median build time in seconds. The program-start
+# columns come from the machine's newest run that has them. Runs on AC power with
 # Low Power Mode off come first, then the fastest. The table goes between the
 # <!-- build-summary:start --> and <!-- build-summary:end --> lines in README.md.
 
@@ -42,20 +43,23 @@ table=$(awk '
       if (F[col["p_cores"]] != "") cores = cores " (" F[col["p_cores"]] "P+" F[col["e_cores"]] "E)"
       info[m] = sprintf("| %s | %s | %s | %s | %s GB | %s |", m, F[col["model"]], F[col["chip"]], cores, F[col["ram_gb"]], F[col["vm"]])
     }
+    if (F[col["start_ms"]] != "")
+      start[m] = sprintf(" %s | %s | %s |", F[col["start_ms"]], F[col["clang_ms"]], F[col["file_us"]])
+    if (F[col["date"]] > last[m]) last[m] = F[col["date"]]
+    if (p == "") next                 # a --start-only run
     rank = (F[col["power"]] != "AC") * 2 + (F[col["low_power"]] == "True")
     t = F[col["build_s_median"]] + 0
     k = m SUBSEP p
     if (!(k in best) || rank < brank[k] || (rank == brank[k] && t < best[k])) {
-      best[k] = t; brank[k] = rank; bdate[k] = F[col["date"]]
-      if (bdate[k] > last[m]) last[m] = bdate[k]
+      best[k] = t; brank[k] = rank
     }
   }
   END {
-    h = "| Machine | Model | Chip | Cores | RAM | VM |"; s = "|---|---|---|---|--:|---|"
+    h = "| Machine | Model | Chip | Cores | RAM | VM | Start (ms) | clang (ms) | File (µs) |"; s = "|---|---|---|---|--:|---|--:|--:|--:|"
     for (j = 1; j <= np; j++) { h = h " " P[j] " (s) |"; s = s "--:|" }
     print h " Date |"; print s "---|"
     for (i = 1; i <= machines; i++) {
-      m = order[i]; line = info[m]
+      m = order[i]; line = info[m] ((m in start) ? start[m] : " – | – | – |")
       for (j = 1; j <= np; j++) { k = m SUBSEP P[j]; line = line " " ((k in best) ? sprintf("%.1f", best[k]) : "–") " |" }
       print line " " last[m] " |"
     }

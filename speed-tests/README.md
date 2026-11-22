@@ -91,6 +91,7 @@ zsh ~/mac-setup/speed-tests/build-speed.sh                      # every project 
 zsh ~/mac-setup/speed-tests/build-speed.sh --project openssl    # one project (or --project openssl,sdl)
 zsh ~/mac-setup/speed-tests/build-speed.sh --runs 1             # one build per project instead of 3
 zsh ~/mac-setup/speed-tests/build-speed.sh --save               # also add the results to build-results.csv
+zsh ~/mac-setup/speed-tests/build-speed.sh --start-only         # only the program-start test (about 15 seconds)
 ```
 
 This is a pilot: it builds several candidate projects so we can see, across 3 or 4 Macs, which one gives the most useful numbers. The best one will become the default.
@@ -111,17 +112,18 @@ How it measures:
 - Build folders are deleted however the script ends; the last log for each project stays in `~/Library/Caches/mac-setup/build-speed/logs`.
 - Xcode projects use Xcode even when `xcode-select` points at the Command Line Tools, and are skipped (with the reason) when Xcode isn't installed. Xcode is not installed by `setup.sh`.
 - A laptop on battery or in Low Power Mode builds slower; the script warns, and records both.
+- **Program-start test.** Every run starts with three quick measurements, each the median of 3 rounds: starting `/usr/bin/true` 1,000 times (ms per program start), compiling an empty C file 200 times (ms per compile), and writing 5,000 small files next to the builds (µs per file). Builds do these thousands of times, so this shows what security software (antivirus, EDR) adds on a Mac, apart from compile speed (see [#17](https://github.com/iroach/mac-setup/issues/17)). They go into every CSV row of the run; `--start-only` runs just these and saves a row with no project.
 
 ### Build summary
 
-Best median build time per project, in seconds, built from `build-results.csv` by [`build-summary.sh`](build-summary.sh). Runs on AC power with Low Power Mode off are preferred. "–" means the project wasn't run there.
+Best median build time per project, in seconds, built from `build-results.csv` by [`build-summary.sh`](build-summary.sh). Runs on AC power with Low Power Mode off are preferred. The Start, clang and File columns are the program-start test from the machine's newest run that has it. "–" means it wasn't run there.
 
 <!-- build-summary:start -->
-| Machine | Model | Chip | Cores | RAM | VM | openssl (s) | ffmpeg (s) | sdl (s) | netnewswire (s) | ghostty (s) | Date |
-|---|---|---|---|--:|---|--:|--:|--:|--:|--:|---|
-| Mac mini | Mac16,10 | Apple M4 | 10 (4P+6E) | 24 GB | False | 35.0 | 48.4 | 8.3 | 66.7 | 165.1 | 2026-11-22 |
-| MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | 61.9 | 44.4 | 11.8 | 48.6 | – | 2026-11-22 |
-| MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
+| Machine | Model | Chip | Cores | RAM | VM | Start (ms) | clang (ms) | File (µs) | openssl (s) | ffmpeg (s) | sdl (s) | netnewswire (s) | ghostty (s) | Date |
+|---|---|---|---|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|---|
+| Mac mini | Mac16,10 | Apple M4 | 10 (4P+6E) | 24 GB | False | 1.00 | 15.8 | 43 | 35.0 | 48.4 | 8.3 | 66.7 | 165.1 | 2026-11-22 |
+| MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | – | – | – | 61.9 | 44.4 | 11.8 | 48.6 | – | 2026-11-22 |
+| MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | – | – | – | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
 <!-- build-summary:end -->
 
 First pilot results, on the Mac mini (M4, 3 runs each):
@@ -156,6 +158,7 @@ One row per project per run of the script.
 | `jobs`, `runs` | parallel build jobs (one per core) and how many builds |
 | `configure_s` | median configure time in seconds (not part of the score) |
 | `build_s_median`, `build_s_min`, `build_s_max` | build times in seconds |
+| `start_ms`, `clang_ms`, `file_us` | the program-start test: ms per program start, ms per empty clang compile, µs per small file. Blank in rows from before the test existed |
 | `notes` | anything that affected the run, from `--note` |
 
 ### Testing another Mac or VM
