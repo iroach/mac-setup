@@ -186,15 +186,35 @@ To import an issue by hand instead: `gh issue view 42 --json body -q .body | pyt
 
 Security software on a Mac (EDR, antivirus) checks programs and files on the Mac itself, but not inside a virtual machine. Running the test in a Tart VM on the same Mac shows how much that software costs: compare the VM's program-start results and configure times (which run one program at a time, so CPU count matters little) with the Mac's own. See [#17](https://github.com/iroach/mac-setup/issues/17). On the Mac mini, which has no such software, the VM's numbers match the Mac's.
 
-[`vm-build-speed.sh`](vm-build-speed.sh) does this with [Tart](https://tart.run) (`brew install cirruslabs/cli/tart`):
+[`vm-build-speed.sh`](vm-build-speed.sh) does this with [Tart](https://tart.run). On each Mac to test:
 
-```sh
-# Once: make the build-speed-base VM from a macOS image with an "admin" user
-# (password admin), Remote Login and passwordless sudo, such as a Cirrus Labs vanilla image.
-zsh ~/mac-setup/speed-tests/vm-build-speed.sh prepare ghcr.io/cirruslabs/macos-golden-gate-vanilla:latest
+1. **Get the latest repo.** `cd ~/mac-setup && git pull` (or clone it, as above). Until the build speed test is merged into `main`, use its branch: `git fetch origin && git switch build-speed-test && git reset --hard origin/build-speed-test`.
 
-# Each test: a fresh copy of build-speed-base with 4 CPUs and 8 GB, deleted afterwards.
-zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --project openssl,ffmpeg,sdl --name "Tart VM on MacBook Pro M5 Pro" --submit
-```
+2. **Install Tart** if `tart --version` doesn't work. `setup.sh` installs it from the Brewfile; by hand, trust the tap first, as `setup.sh` does:
+   ```sh
+   brew tap openai/tools && brew trust --formula openai/tools/tart && brew install openai/tools/tart
+   ```
 
-`prepare` installs Homebrew, the Command Line Tools and cmake in the VM, and adds your SSH key (`~/.ssh/id_ed25519`) using the VM's password once (set `VM_PASSWORD` if it isn't `admin`). `run` shares this repo with the VM, waits a minute for the VM to settle after starting, runs `build-speed.sh` there with the options given, and with `--submit` opens the issue form on this Mac. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
+3. **Have an SSH key.** The script logs in to the VM with `~/.ssh/id_ed25519`. If `ls ~/.ssh/id_ed25519.pub` finds nothing, make one with `ssh-keygen -t ed25519` (press Return for no passphrase, or use one held by the SSH agent).
+
+4. **Test the Mac itself** with the program-start test, so there's something to compare the VM with (about 15 seconds):
+   ```sh
+   zsh ~/mac-setup/speed-tests/build-speed.sh --start-only --name "MacBook Pro M5 Pro" --submit
+   ```
+   For a fuller comparison, run `--project openssl,ffmpeg,sdl` instead of `--start-only` (10 to 20 minutes).
+
+5. **Make the VM, once.** This downloads a macOS image of tens of gigabytes (it takes about 35 GB on disk), so allow time and space. It works with any image that has an `admin` user (password `admin`, or set `VM_PASSWORD`), Remote Login and passwordless sudo, as Cirrus Labs' vanilla images do:
+   ```sh
+   zsh ~/mac-setup/speed-tests/vm-build-speed.sh prepare ghcr.io/cirruslabs/macos-golden-gate-vanilla:latest
+   ```
+   It saves the VM as `build-speed-base`, with Homebrew, the Command Line Tools and cmake installed and your SSH key added. Company-managed Macs may block VMs or the download; if so, ask IT.
+
+6. **Run the test in the VM.** Each run uses a fresh copy of `build-speed-base` with 4 CPUs and 8 GB, waits a minute for it to settle after starting, and deletes it afterwards. Use the same `--project` as in step 4:
+   ```sh
+   zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --start-only --name "Tart VM on MacBook Pro M5 Pro" --submit
+   ```
+   The issue form opens on this Mac, as in step 4. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
+
+`--submit` needs the issue form and its action on `main`. Until the build speed test is merged, use `--save` in steps 4 and 6 instead, then commit the new rows (with the GitHub noreply address as your git email) and push them to the branch.
+
+When you're done, `tart delete build-speed-base` frees the space; keep it to test again later.

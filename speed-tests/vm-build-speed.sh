@@ -19,7 +19,7 @@
 #     --name "Tart VM on MacBook Pro M5 Pro"   machine name (default: "Tart VM on <this Mac's model>")
 #     --cpu 4 --memory 8                       VM size (default 4 CPUs, 8 GB, the same on every Mac)
 # With --save, the results go straight into this repo's build-results.csv.
-# Needs tart (brew install cirruslabs/cli/tart) and an SSH key (~/.ssh/id_ed25519).
+# Needs tart (installed by setup.sh; see the README) and an SSH key (~/.ssh/id_ed25519).
 # (Help text ends on the line above.)
 
 set -euo pipefail
@@ -36,7 +36,7 @@ usage() { sed -n '2,/Help text ends/p' "$SELF" | sed '$d' | sed 's/^# \{0,1\}//'
 die()   { print -P "%F{red}$*%f" >&2; exit 1; }
 say()   { print -P "%F{blue}==>%f $*"; }
 
-command -v tart >/dev/null || die "tart isn't installed: brew install cirruslabs/cli/tart"
+command -v tart >/dev/null || die "tart isn't installed: brew tap openai/tools && brew trust --formula openai/tools/tart && brew install openai/tools/tart"
 [[ -f $KEY.pub ]] || die "Needs an SSH key at $KEY (ssh-keygen -t ed25519)"
 
 VM=""          # the VM this script started, stopped and (for run) deleted on exit
