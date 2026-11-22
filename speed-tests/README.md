@@ -123,7 +123,7 @@ One row per machine name and CPU count, so a VM run with 4 CPUs and one with 18 
 | Machine | Model | Chip | Cores | RAM | VM | Start (ms) | clang (ms) | File (µs) | openssl (s) | ffmpeg (s) | sdl (s) | netnewswire (s) | ghostty (s) | Date |
 |---|---|---|---|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|---|
 | Mac mini | Mac16,10 | Apple M4 | 10 (4P+6E) | 24 GB | False | 1.00 | 15.8 | 43 | 35.0 | 48.4 | 8.3 | 66.7 | 165.1 | 2026-11-22 |
-| MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | – | – | – | 61.9 | 44.4 | 11.8 | 48.6 | – | 2026-11-22 |
+| MacBook Pro M5 Pro | Mac17,12 | Apple M5 Pro | 18 (6P+12E) | 24 GB | False | 4.90 | 28.0 | 84 | 61.9 | 44.3 | 11.5 | 48.6 | – | 2026-11-22 |
 | MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | – | – | – | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
 | MacBook Pro Intel | MacBookPro16,1 | Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz | 16 threads (8 cores) | 16 GB | False | 2.52 | 40.8 | 121 | 68.0 | 71.5 | 17.3 | – | – | 2026-11-22 |
 | Apple M5 Pro (Virtual) | VirtualMac2,1 | Apple M5 Pro (Virtual) | 18 virtual | 16 GB | True | 0.98 | 12.6 | 44 | 17.1 | 22.0 | – | – | – | 2026-11-22 |
