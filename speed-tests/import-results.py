@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -I
 """Add build-speed results from a "Build speed results" issue to build-results.csv.
 
     gh issue view 42 --json body -q .body | python3 -I speed-tests/import-results.py 42
