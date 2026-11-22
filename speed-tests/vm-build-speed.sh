@@ -16,7 +16,7 @@
 #   this repo with it, runs build-speed.sh there with the options given, and deletes
 #   the VM afterwards. Options go to build-speed.sh (--project, --runs, --save,
 #   --submit, --note, --start-only); --submit opens the issue form on this Mac. Also:
-#     --name "Tart VM on MacBook Pro M5 Pro"   machine name (default: "Tart VM on <this Mac's model>")
+#     --name "Apple M5 Pro (Virtual)"          machine name (default: the VM's chip, as shown)
 #     --cpu 4 --memory 8                       VM size (default 4 CPUs, 8 GB, the same on every Mac)
 # With --save, the results go straight into this repo's build-results.csv.
 # Needs tart (installed by setup.sh; see the README) and an SSH key (~/.ssh/id_ed25519).
@@ -106,7 +106,6 @@ run() {
     esac
     shift
   done
-  [[ -n "$name" ]] || name="Tart VM on $(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ && !n++ {print $2}')"
   tart list --quiet 2>/dev/null | grep -qx $BASE || die "No $BASE VM yet. Make it first: zsh $SELF prepare IMAGE"
   VM=build-speed-run-$$ DELETE=1
   tart clone $BASE $VM
@@ -115,12 +114,14 @@ run() {
   key_login
   say "Waiting 60 seconds for the VM to finish starting up (indexing and so on)"
   sleep 60
-  say "Running build-speed.sh in the VM ($cpu CPUs, $memory GB) as \"$name\""
+  say "Running build-speed.sh in the VM ($cpu CPUs, $memory GB)${name:+ as \"$name\"}"
+  # Without --name, build-speed.sh names the run after the VM's chip.
+  [[ -z "$name" ]] || args=(--name "$name" $args)
   # -t: a terminal, so Ctrl+C here stops the test in the VM too. With --submit, the
   # VM prints the issue link (it isn't signed in to GitHub) and this Mac opens it.
   local out=$(mktemp)
   ssh -t $SSH_OPTS -o BatchMode=yes admin@$IP \
-    "eval \"\$(/opt/homebrew/bin/brew shellenv)\"; zsh '/Volumes/My Shared Files/mac-setup/speed-tests/build-speed.sh' --name ${(q)name} ${(j: :)${(q)args}}" \
+    "eval \"\$(/opt/homebrew/bin/brew shellenv)\"; zsh '/Volumes/My Shared Files/mac-setup/speed-tests/build-speed.sh' ${(j: :)${(@q)args}}" \
     | tee $out
   local url=$(sed -n 's/^SUBMIT-URL: \([^[:space:]]*\).*/\1/p' $out | tr -d '\r')
   rm -f $out

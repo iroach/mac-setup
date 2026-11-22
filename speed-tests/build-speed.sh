@@ -8,7 +8,8 @@
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --save              # also add the results to build-results.csv
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --start-only        # only the program-start test (about 15 seconds)
 #   zsh ~/mac-setup/speed-tests/build-speed.sh --submit            # submit the results in a GitHub issue, for review
-#       --name "Tart VM on MacBook Pro"   what to call this machine (default: its model name)
+#       --name "MacBook Pro M5 Pro"       what to call this machine (default: its model name;
+#                                         in a VM, its chip, such as "Apple M5 Pro (Virtual)")
 #       --note "a VM was running"         a note to keep with the run
 #
 # Projects (pinned versions; sources are checked against a SHA-256 before use):
@@ -124,6 +125,8 @@ main() {
   [[ -n "$XCODE_DIR" ]] && xcode_v=$(DEVELOPER_DIR=$XCODE_DIR xcodebuild -version 2>/dev/null | sed -n '1s/^Xcode //p')
   [[ $(pmset -g batt 2>/dev/null | sed -n 1p) == *"Battery Power"* ]] && power=battery
   [[ $(pmset -g 2>/dev/null | awk '/lowpowermode/ {print $2}') == 1 ]] && low_power=True
+  # A VM's model name ("Apple Virtual Machine 1") doesn't say what it runs on; its chip does.
+  [[ -n "$NAME" || $vm == False ]] || NAME=$chip
   [[ -n "$NAME" ]] || NAME=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ && !n++ {print $2}')
   [[ -n "$NAME" ]] || NAME=$model
 

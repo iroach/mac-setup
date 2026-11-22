@@ -213,9 +213,9 @@ Security software on a Mac (EDR, antivirus) checks programs and files on the Mac
 
 6. **Run the test in the VM.** Each run uses a fresh copy of `build-speed-base` with 4 CPUs and 8 GB, waits a minute for it to settle after starting, and deletes it afterwards. Use the same `--project` as in step 4:
    ```sh
-   zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --start-only --name "Tart VM on MacBook Pro M5 Pro" --submit
+   zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --start-only --submit
    ```
-   The issue form opens on this Mac, as in step 4. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
+   The results are named after the VM's chip, such as "Apple M5 Pro (Virtual)", so each Mac's VM gets its own row; `--name` sets another name. The issue form opens on this Mac, as in step 4. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
 
 `--submit` needs the issue form and its action on `main`. Until the build speed test is merged, use `--save` in steps 4 and 6 instead, then commit the new rows (with the GitHub noreply address as your git email) and push them to the branch.
 
