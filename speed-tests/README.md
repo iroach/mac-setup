@@ -179,8 +179,10 @@ When it finishes, a "Build speed results" issue opens in your browser with the r
 To review a submission (maintainers):
 
 1. Check the rows in the issue: the machine name, the numbers, and that nothing identifies a person or organization.
-2. Add the **approved** label. The [Import build results](../.github/workflows/import-build-results.yml) action checks every field strictly with [`import-results.py`](import-results.py), adds the rows to `build-results.csv` (with the issue number and the setup answer in `notes`), rebuilds the summary, and opens a pull request that closes the issue. If a row is wrong, it comments on the issue instead.
-3. Review and merge the pull request.
+2. Add the **approved** label to the issue. The [Import build results](../.github/workflows/import-build-results.yml) action checks every field strictly with [`import-results.py`](import-results.py), adds the rows to `build-results.csv` (with the issue number and the setup answer in `notes`), rebuilds the summary, and opens a pull request titled like "Build speed results from MacBook Pro M1 Max (issue #25)" that closes the issue. If a row is wrong, it comments on the issue instead.
+3. Review and merge the pull request. It has its own number, different from the issue's.
+
+Labels always go on the **issue**, never on the pull request; the action only watches issues. If a results pull request shows conflicts because another one was merged first, don't fix it by hand (the summary table has to be recomputed): remove and re-add **approved** on its issue, and the action rebuilds the same pull request from the latest `main`.
 
 To import an issue by hand instead: `gh issue view 42 --json body -q .body | python3 -I speed-tests/import-results.py 42`, then `zsh speed-tests/build-summary.sh`.
 

@@ -41,27 +41,36 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          python3 -I speed-tests/import-results.py "$ISSUE" 2> error.txt
+          MACHINES_OUT=machines.txt python3 -I speed-tests/import-results.py "$ISSUE" 2> error.txt
           zsh speed-tests/build-summary.sh
 
       - name: Open a pull request
         run: |
           branch="build-results/issue-$ISSUE"
+          # Issues and pull requests share numbers, so the title names the issue as
+          # "issue #N" and leads with the machine(s), which import-results.py checked.
+          machines=$(cut -c1-80 machines.txt)
+          title="Build speed results from $machines (issue #$ISSUE)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
           git add speed-tests/build-results.csv speed-tests/README.md
-          git commit -q -m "Build speed results from #$ISSUE"
+          git commit -q -m "$title"
           git push -q --force origin "$branch"
-          url=$(gh pr list --head "$branch" --json url -q '.[0].url')
-          if [ -z "$url" ]; then
-            url=$(gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
-              --title "Build speed results from #$ISSUE" \
-              --body "Adds the results from #$ISSUE to \`speed-tests/build-results.csv\` and rebuilds the summary in \`speed-tests/README.md\`. Check the rows, then merge.
+          body="Adds the results from issue #$ISSUE ($machines) to \`speed-tests/build-results.csv\` and rebuilds the summary in \`speed-tests/README.md\`. Check the rows, then merge this pull request.
 
-          Closes #$ISSUE")
+          Labels go on issue #$ISSUE, not on this pull request. If this pull request has conflicts (another results pull request was merged first), don't edit it: remove and re-add the \`approved\` label on issue #$ISSUE, and this pull request is rebuilt from the latest \`main\`.
+
+          Closes #$ISSUE"
+          pr=$(gh pr list --head "$branch" --json number -q '.[0].number')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --title "$title" --body "$body" >/dev/null
+          else
+            gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+              --title "$title" --body "$body" >/dev/null
+            pr=$(gh pr list --head "$branch" --json number -q '.[0].number')
           fi
-          gh issue comment "$ISSUE" --body "Thanks! The results passed the checks and are in $url. They'll be added when it's merged."
+          gh issue comment "$ISSUE" --body "Thanks! The results passed the checks and are in pull request #$pr. Review and merge that pull request to add them; this issue closes when it's merged."
 
       - name: Report a problem
         if: failure()
@@ -74,6 +83,6 @@ jobs:
             { tr -d '`' < error.txt; } 2>/dev/null | head -20 | grep . || echo "The import job failed; see the Actions log."
             echo '```'
             echo
-            echo "Edit the issue to fix the rows, then remove and re-add the \`approved\` label."
+            echo "Edit this issue to fix the rows, then remove and re-add the \`approved\` label on this issue."
           } > comment.md
           gh issue comment "$ISSUE" --body-file comment.md
