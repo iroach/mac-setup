@@ -127,6 +127,7 @@ One row per machine name and CPU count, so a VM run with 4 CPUs and one with 18 
 | MacBook Pro M1 Max | MacBookPro18,2 | Apple M1 Max | 10 (8P+2E) | 32 GB | False | – | – | – | 50.0 | 54.8 | 10.6 | 102.5 | – | 2026-11-22 |
 | MacBook Pro Intel | MacBookPro16,1 | Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz | 16 threads (8 cores) | 16 GB | False | 2.52 | 40.8 | 121 | 68.0 | 71.5 | 17.3 | – | – | 2026-11-22 |
 | Apple M5 Pro (Virtual) | VirtualMac2,1 | Apple M5 Pro (Virtual) | 18 virtual | 16 GB | True | 0.98 | 12.6 | 44 | 17.1 | 22.0 | – | – | – | 2026-11-22 |
+| Apple M5 Pro (Virtual) | VirtualMac2,1 | Apple M5 Pro (Virtual) | 4 virtual | 16 GB | True | 0.82 | 10.6 | 40 | 48.3 | 61.1 | – | – | – | 2026-11-22 |
 <!-- build-summary:end -->
 
 First pilot results, on the Mac mini (M4, 3 runs each):
