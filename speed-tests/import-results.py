@@ -70,7 +70,9 @@ def sections(body):
 def clean_text(s, limit):
     s = " ".join(s.split())                       # no newlines or runs of spaces
     s = re.sub(r"[\x00-\x1f|\x7f\"]", "", s)       # no control characters, |, or quotes
-    return s[:limit]
+    if len(s) > limit:                            # cut at a word, and show that it was cut
+        s = s[:limit - 1].rsplit(" ", 1)[0].rstrip(" ,;.") + "…"
+    return s
 
 
 def check_row(row, header, n):
@@ -127,7 +129,7 @@ def main():
     if managed not in MANAGED:
         fail(f"unknown answer to 'How is this Mac set up?': {managed!r}")
     note = form.get("Notes", "")
-    note = "" if note == "_No response_" else clean_text(note, 100)
+    note = "" if note == "_No response_" else clean_text(note, 150)
 
     with CSV_PATH.open(newline="") as f:
         existing = list(csv.reader(f))

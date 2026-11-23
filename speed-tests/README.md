@@ -194,7 +194,7 @@ Security software on a Mac (EDR, antivirus) checks programs and files on the Mac
 
 [`vm-build-speed.sh`](vm-build-speed.sh) does this with [Tart](https://tart.run). On each Mac to test:
 
-1. **Get the latest repo.** `cd ~/mac-setup && git pull` (or clone it, as above). Until the build speed test is merged into `main`, use its branch: `git fetch origin && git switch build-speed-test && git reset --hard origin/build-speed-test`.
+1. **Get the latest repo.** `cd ~/mac-setup && git pull` (or clone it, as above).
 
 2. **Install Tart** if `tart --version` doesn't work. `setup.sh` installs it from the Brewfile; by hand, trust the tap first, as `setup.sh` does:
    ```sh
@@ -220,7 +220,5 @@ Security software on a Mac (EDR, antivirus) checks programs and files on the Mac
    zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --start-only --submit
    ```
    The results are named after the VM's chip, such as "Apple M5 Pro (Virtual)", so each Mac's VM gets its own row; `--name` sets another name. The issue form opens on this Mac, as in step 4. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
-
-`--submit` needs the issue form and its action on `main`. Until the build speed test is merged, use `--save` in steps 4 and 6 instead, then commit the new rows (with the GitHub noreply address as your git email) and push them to the branch.
 
 When you're done, `tart delete build-speed-base` frees the space; keep it to test again later.
