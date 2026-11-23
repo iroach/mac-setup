@@ -3,6 +3,9 @@
 
     gh issue view 42 --json body -q .body | python3 -I speed-tests/import-results.py 42
 
+With MACHINES_OUT set to a file path, also writes the machine names of the new
+rows there, comma-separated (the workflow uses them in the pull request title).
+
 Reads the issue body on stdin (or from $ISSUE_BODY), checks every row strictly,
 and appends the new ones. The issue form's answers and the issue number go into
 each row's notes. Exits with an error, changing nothing, if any row is wrong.
@@ -67,7 +70,9 @@ def sections(body):
 def clean_text(s, limit):
     s = " ".join(s.split())                       # no newlines or runs of spaces
     s = re.sub(r"[\x00-\x1f|\x7f\"]", "", s)       # no control characters, |, or quotes
-    return s[:limit]
+    if len(s) > limit:                            # cut at a word, and show that it was cut
+        s = s[:limit - 1].rsplit(" ", 1)[0].rstrip(" ,;.") + "…"
+    return s
 
 
 def check_row(row, header, n):
@@ -124,7 +129,7 @@ def main():
     if managed not in MANAGED:
         fail(f"unknown answer to 'How is this Mac set up?': {managed!r}")
     note = form.get("Notes", "")
-    note = "" if note == "_No response_" else clean_text(note, 100)
+    note = "" if note == "_No response_" else clean_text(note, 150)
 
     with CSV_PATH.open(newline="") as f:
         existing = list(csv.reader(f))
@@ -132,7 +137,7 @@ def main():
     # Rows already there, compared without notes (imported rows have extra notes).
     known = {tuple(r[:-1]) for r in existing[1:]}
 
-    new = []
+    new, machines = [], []
     for n, line in enumerate(lines, 1):
         if line.startswith("date,"):
             continue                              # a pasted header line
@@ -145,12 +150,16 @@ def main():
         r["notes"] = r["notes"].lstrip()
         known.add(tuple(row[:-1]))
         new.append(to_line(r, header))
+        machines.append(r["machine"])
     if not new:
         fail("no new rows to add")
 
     with CSV_PATH.open("a", newline="") as f:
         f.write("\n".join(new) + "\n")
     print(f"Added {len(new)} row(s) from #{issue} to {CSV_PATH.name}")
+    # The machine names, for the pull request title (already checked above).
+    if os.environ.get("MACHINES_OUT"):
+        Path(os.environ["MACHINES_OUT"]).write_text(", ".join(dict.fromkeys(machines)))
 
 
 if __name__ == "__main__":

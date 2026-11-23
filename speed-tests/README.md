@@ -1,5 +1,7 @@
 # Speed tests
 
+These tests support the [setup](../README.md): it aims to be the best setup for a developer, and these numbers show what makes a Mac fast or slow to develop on, so choices about hardware, VMs and setup can rest on measurements.
+
 Disk and build speed results for my Macs and Tart VMs: disk speed with [`disk-speed.sh`](disk-speed.sh), build speed with [`build-speed.sh`](build-speed.sh) ([below](#build-speed)).
 
 ## Disk speed
@@ -179,8 +181,10 @@ When it finishes, a "Build speed results" issue opens in your browser with the r
 To review a submission (maintainers):
 
 1. Check the rows in the issue: the machine name, the numbers, and that nothing identifies a person or organization.
-2. Add the **approved** label. The [Import build results](../.github/workflows/import-build-results.yml) action checks every field strictly with [`import-results.py`](import-results.py), adds the rows to `build-results.csv` (with the issue number and the setup answer in `notes`), rebuilds the summary, and opens a pull request that closes the issue. If a row is wrong, it comments on the issue instead.
-3. Review and merge the pull request.
+2. Add the **approved** label to the issue. The [Import build results](../.github/workflows/import-build-results.yml) action checks every field strictly with [`import-results.py`](import-results.py), adds the rows to `build-results.csv` (with the issue number and the setup answer in `notes`), rebuilds the summary, and opens a pull request titled like "Build speed results from MacBook Pro M1 Max (issue #25)" that closes the issue. If a row is wrong, it comments on the issue instead.
+3. Review and merge the pull request. It has its own number, different from the issue's.
+
+Labels always go on the **issue**, never on the pull request; the action only watches issues. If a results pull request shows conflicts because another one was merged first, don't fix it by hand (the summary table has to be recomputed): remove and re-add **approved** on its issue, and the action rebuilds the same pull request from the latest `main`.
 
 To import an issue by hand instead: `gh issue view 42 --json body -q .body | python3 -I speed-tests/import-results.py 42`, then `zsh speed-tests/build-summary.sh`.
 
@@ -192,7 +196,7 @@ Security software on a Mac (EDR, antivirus) checks programs and files on the Mac
 
 [`vm-build-speed.sh`](vm-build-speed.sh) does this with [Tart](https://tart.run). On each Mac to test:
 
-1. **Get the latest repo.** `cd ~/mac-setup && git pull` (or clone it, as above). Until the build speed test is merged into `main`, use its branch: `git fetch origin && git switch build-speed-test && git reset --hard origin/build-speed-test`.
+1. **Get the latest repo.** `cd ~/mac-setup && git pull` (or clone it, as above).
 
 2. **Install Tart** if `tart --version` doesn't work. `setup.sh` installs it from the Brewfile; by hand, trust the tap first, as `setup.sh` does:
    ```sh
@@ -218,7 +222,5 @@ Security software on a Mac (EDR, antivirus) checks programs and files on the Mac
    zsh ~/mac-setup/speed-tests/vm-build-speed.sh run --start-only --submit
    ```
    The results are named after the VM's chip, such as "Apple M5 Pro (Virtual)", so each Mac's VM gets its own row; `--name` sets another name. The issue form opens on this Mac, as in step 4. Use the same `--cpu` and `--memory` everywhere (defaults 4 and 8) so VM results compare.
-
-`--submit` needs the issue form and its action on `main`. Until the build speed test is merged, use `--save` in steps 4 and 6 instead, then commit the new rows (with the GitHub noreply address as your git email) and push them to the branch.
 
 When you're done, `tart delete build-speed-base` frees the space; keep it to test again later.
