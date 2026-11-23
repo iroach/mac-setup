@@ -1,5 +1,7 @@
 # Speed tests
 
+These tests support the [setup](../README.md): it aims to be the best setup for a developer, and these numbers show what makes a Mac fast or slow to develop on, so choices about hardware, VMs and setup can rest on measurements.
+
 Disk and build speed results for my Macs and Tart VMs: disk speed with [`disk-speed.sh`](disk-speed.sh), build speed with [`build-speed.sh`](build-speed.sh) ([below](#build-speed)).
 
 ## Disk speed

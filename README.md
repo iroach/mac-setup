@@ -1,6 +1,6 @@
 # mac-setup
 
-Sets up a Mac for development with one command.
+Sets up a Mac for development with one command. The goal is the best setup for a developer: the right tools, set up the same way on every Mac. The [speed tests](speed-tests/README.md) support that by measuring what makes a Mac fast or slow to develop on, such as disk speed, build times and the cost of security software, so choices about hardware, VMs and setup rest on numbers.
 
 | Area | Tool |
 |---|---|
